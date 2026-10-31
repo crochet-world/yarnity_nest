@@ -13,7 +13,8 @@
 
 const STORE = {
   brandName: "yarnity_nest",
-  whatsappNumber: "918726064563",
+  whatsappNumber: "918777826199",
+  orderWhatsappNumber: "918726064563",
   instagramUrl: "https://www.instagram.com/yarnity_nest/"
 };
 
@@ -345,8 +346,8 @@ const PRODUCTS = [
   }
 ];
 
-function whatsappUrl(message) {
-  const number = STORE.whatsappNumber.replace(/\D/g, "");
+function whatsappUrl(message, whatsappNumber) {
+  const number = whatsappNumber.replace(/\D/g, "");
 
   if (!number) {
     return "";
@@ -355,8 +356,8 @@ function whatsappUrl(message) {
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
-function setupLink(element, message) {
-  const href = whatsappUrl(message);
+function setupLink(element, message, whatsappNumber) {
+  const href = whatsappUrl(message, whatsappNumber || STORE.whatsappNumber);
 
   if (href) {
     element.href = href;
@@ -406,8 +407,12 @@ function updateBrand() {
   const generalMessage =
     `Hi ${STORE.brandName}! I'd like to know more about your crochet products.`;
 
+  const orderLink = document.getElementById("header-whatsapp");
+  if (orderLink) {
+    setupLink(orderLink, generalMessage, STORE.orderWhatsappNumber);
+  }
+
   [
-    "header-whatsapp",
     "story-whatsapp",
     "footer-whatsapp"
   ].forEach(function (id) {
