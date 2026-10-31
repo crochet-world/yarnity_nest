@@ -181,7 +181,7 @@ const PRODUCTS = [
     category: "Bag Charms & Keychains",
     bg: "#e6ddec",
     accent: "#92749e",
-    image: ""
+    image: "images/KeyRing1.jpeg"
   },
   {
     name: "Bag charm / keychain 2",
@@ -192,7 +192,7 @@ const PRODUCTS = [
     category: "Bag Charms & Keychains",
     bg: "#f4e4e0",
     accent: "#b56f69",
-    image: ""
+    image: "images/Key_Ring2.jpeg"
   },
   {
     name: "Bag charm / keychain 3",
@@ -238,7 +238,7 @@ const PRODUCTS = [
     category: "Tea Coasters",
     bg: "#dce3d5",
     accent: "#71816a",
-    image: ""
+    image: "images/Tea_Coaster1.jpeg"
   },
   {
     name: "Tea coaster 2",
@@ -295,7 +295,7 @@ const PRODUCTS = [
     category: "Hair Accessories",
     bg: "#f1ddd5",
     accent: "#b56f69",
-    image: ""
+    image: "images/HairItems1.jpeg"
   },
   {
     name: "Hair accessory 2",
@@ -306,7 +306,7 @@ const PRODUCTS = [
     category: "Hair Accessories",
     bg: "#e6ddec",
     accent: "#92749e",
-    image: ""
+    image: "images/HairItems2.jpeg"
   },
   {
     name: "Hair accessory 3",
@@ -487,7 +487,7 @@ function renderProducts(category) {
 
   grid.innerHTML = filteredProducts.map(function (product) {
     const media = product.image
-      ? `<img src="${product.image}" alt="${product.name}" loading="lazy">`
+      ? `<button class="product-photo-trigger" type="button" data-image="${product.image}" data-image-alt="${product.name}" aria-label="View larger image: ${product.name}"><img src="${product.image}" alt="" loading="lazy"></button>`
       : `<span class="product-placeholder" aria-hidden="true">${product.emoji || "✿"}</span>`;
 
     return `
@@ -523,7 +523,34 @@ function renderProducts(category) {
       `Hi ${STORE.brandName}! I'm interested in "${product.name}" (${product.price}). Is it available?`
     );
   });
+
+  grid.querySelectorAll(".product-photo-trigger").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const dialog = document.getElementById("image-preview");
+      const photo = document.getElementById("image-preview-photo");
+      const caption = document.getElementById("image-preview-caption");
+
+      if (!dialog || !photo || !caption) {
+        return;
+      }
+
+      photo.src = button.dataset.image;
+      photo.alt = button.dataset.imageAlt || "";
+      caption.textContent = photo.alt;
+      dialog.showModal();
+    });
+  });
 }
+
+document.getElementById("image-preview")?.addEventListener("click", function (event) {
+  if (event.target === this) {
+    this.close();
+  }
+});
+
+document.querySelector(".image-preview-close")?.addEventListener("click", function () {
+  document.getElementById("image-preview")?.close();
+});
 
 // Start the storefront.
 updateBrand();
