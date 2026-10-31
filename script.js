@@ -3,7 +3,7 @@
   yarnity_nest — Storefront script
 
   To set up later:
-  1. Add your WhatsApp number to STORE.whatsappNumber.
+  1. Set the contact email and WhatsApp number in STORE.
   2. Edit the PRODUCTS list with real product names and prices.
   3. Add photos in your images folder and set each product's image path.
 
@@ -13,9 +13,11 @@
 
 const STORE = {
   brandName: "yarnity_nest",
-  whatsappNumber: "",
+  whatsappNumber: "918726064563",
   instagramUrl: "https://www.instagram.com/yarnity_nest/"
 };
+
+let imagePreviewScrollPosition = 0;
 
 const CATEGORIES = [
   {
@@ -506,22 +508,21 @@ function renderProducts(category) {
 
           <div class="product-bottom">
             <span class="price">${product.price}</span>
-            <a class="order-link product-order" href="#shop">
-              Ask about this ↗
-            </a>
+            <div class="product-contact-links">
+              <a class="order-link product-order-whatsapp" href="#" target="_blank" rel="noreferrer">Ask about this ↗</a>
+            </div>
           </div>
         </div>
       </article>
     `;
   }).join("");
 
-  grid.querySelectorAll(".product-order").forEach(function (link, index) {
+  grid.querySelectorAll(".product-contact-links").forEach(function (links, index) {
     const product = filteredProducts[index];
+    const message =
+      `Hi ${STORE.brandName}! I'm interested in "${product.name}" (${product.price}). Is it available?`;
 
-    setupLink(
-      link,
-      `Hi ${STORE.brandName}! I'm interested in "${product.name}" (${product.price}). Is it available?`
-    );
+    setupLink(links.querySelector(".product-order-whatsapp"), message);
   });
 
   grid.querySelectorAll(".product-photo-trigger").forEach(function (button) {
@@ -537,19 +538,26 @@ function renderProducts(category) {
       photo.src = button.dataset.image;
       photo.alt = button.dataset.imageAlt || "";
       caption.textContent = photo.alt;
+      imagePreviewScrollPosition = window.scrollY;
       dialog.showModal();
     });
   });
 }
 
-document.getElementById("image-preview")?.addEventListener("click", function (event) {
+const imagePreview = document.getElementById("image-preview");
+
+imagePreview?.addEventListener("click", function (event) {
   if (event.target === this) {
     this.close();
   }
 });
 
+imagePreview?.addEventListener("close", function () {
+  window.scrollTo({ top: imagePreviewScrollPosition, behavior: "instant" });
+});
+
 document.querySelector(".image-preview-close")?.addEventListener("click", function () {
-  document.getElementById("image-preview")?.close();
+  imagePreview?.close();
 });
 
 // Start the storefront.
