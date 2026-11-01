@@ -170,29 +170,52 @@
     </section>
 
     <section class="payment-page section" data-route-view="payment">
-      <div class="payment-card">
+      <section class="payment-order-card" aria-labelledby="payment-order-heading">
+        <p class="eyebrow">YOUR ORDER</p>
+        <h1 id="payment-order-heading">Order summary</h1>
+        <div class="payment-order-items" id="payment-order-items"></div>
+        <div class="payment-order-breakdown">
+          <div><span>Items</span><strong id="payment-items-total">₹0</strong></div>
+          <div><span>Delivery</span><strong>Included</strong></div>
+          <div class="payment-order-grand-total"><strong>Total</strong><strong id="payment-order-total">₹0</strong></div>
+        </div>
+        <div class="payment-order-benefits" aria-label="Order benefits">
+          <span>✿ Handmade</span>
+          <span>♧ Secure</span>
+          <span>✦ Small batch</span>
+          <span>♡ Made for you</span>
+        </div>
+        <p class="payment-order-tip">Tip: Confirm the payee and amount in your UPI app before completing payment.</p>
+      </section>
+      <section class="payment-card" aria-labelledby="payment-heading">
         <p class="eyebrow">SECURE YOUR HANDMADE ORDER</p>
-        <h1>Pay with UPI</h1>
+        <h1 id="payment-heading">Payment options</h1>
         <p class="payment-intro">Review your order total, then continue in your preferred UPI app.</p>
         <div class="payment-amount">
           <span>Amount to pay</span>
           <strong id="payment-total">₹0</strong>
         </div>
         <p class="payment-empty-message" id="payment-empty-message" hidden>Your cart is empty. Add a product before proceeding to payment.</p>
+        <figure class="payment-qr">
+          <img src="images/upi-qr.png" alt="UPI payment QR code supplied by the account holder">
+          <figcaption>Scan with your UPI app. Enter the amount shown above if your app asks for it, and verify the payee before paying.</figcaption>
+        </figure>
         <div class="payment-recipient">
-          <span>Pay to</span>
+          <span class="payment-recipient-label">Pay to</span>
           <strong id="payment-payee-name">Kaushal Kumar</strong>
           <span class="payment-upi-row"><span id="payment-upi-id">9674961450@ybl</span><button id="payment-copy-upi" type="button">Copy UPI ID</button></span>
         </div>
-        <a class="button payment-pay-button" id="upi-pay-link" href="#" aria-label="Pay using a UPI app">Pay using UPI</a>
-          <p class="payment-fallback">If no UPI app opens, open your UPI app manually and pay the amount above to the UPI ID shown here.</p>
-          <ol class="payment-instructions">
-          <li>Tap “Pay using UPI” and choose your UPI app.</li>
-          <li>Confirm the recipient and amount in your UPI app before paying.</li>
-          <li>Complete the payment in your UPI app. This website cannot verify payments automatically.</li>
+        <a class="button payment-pay-button" id="upi-pay-link" href="#" aria-label="Pay with UPI ID">Pay with UPI ID</a>
+        <p class="payment-fallback">On a computer, scan the QR code and enter the amount shown above if your UPI app asks for it.</p>
+        <ol class="payment-instructions">
+          <li>Pay the exact amount using the QR code or UPI button.</li>
+          <li>Take a screenshot of your successful payment.</li>
+          <li>Send it to us on Instagram so we can confirm your order.</li>
         </ol>
-        <button class="button payment-back-button" id="payment-back-cart" type="button">Return to cart</button>
-      </div>
+        <a class="button payment-message-button" id="payment-instagram-message" href="#" target="_blank" rel="noreferrer">I have paid, message us</a>
+        <a class="button payment-back-button" href="#shop" data-route-link="shop">Continue shopping</a>
+        <p class="payment-disclaimer">This website cannot verify payments automatically. We will confirm your order after checking your payment.</p>
+      </section>
     </section>
 
     <section class="details section" data-route-view="home">

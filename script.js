@@ -613,13 +613,48 @@ function getCartTotal() {
 function updatePaymentPage(total) {
   const amount = total === undefined ? getCartTotal() : total;
   const amountElement = document.getElementById("payment-total");
-  const payLink = document.getElementById("upi-pay-link");
+  const orderItemsElement = document.getElementById("payment-order-items");
+  const itemsTotalElement = document.getElementById("payment-items-total");
+  const orderTotalElement = document.getElementById("payment-order-total");
+  const payLinks = document.querySelectorAll("#upi-pay-link");
+  const paymentMessageLink = document.getElementById("payment-instagram-message");
   const upiIdElement = document.getElementById("payment-upi-id");
   const payeeNameElement = document.getElementById("payment-payee-name");
   const emptyNotice = document.getElementById("payment-empty-message");
 
   if (amountElement) {
     amountElement.textContent = formatRupees(amount);
+  }
+  if (itemsTotalElement) {
+    itemsTotalElement.textContent = formatRupees(amount);
+  }
+  if (orderTotalElement) {
+    orderTotalElement.textContent = formatRupees(amount);
+  }
+  if (orderItemsElement) {
+    if (cartItems.length === 0) {
+      orderItemsElement.innerHTML = '<p class="payment-order-empty">Your cart is empty.</p>';
+    } else {
+      orderItemsElement.innerHTML = cartItems.map(function (item) {
+        const product = PRODUCTS[item.productIndex];
+        const imageMarkup = product.image
+          ? `<img src="${product.image}" alt="">`
+          : `<span aria-hidden="true">${product.emoji || "✿"}</span>`;
+
+        return `
+          <article class="payment-order-item">
+            <div class="payment-order-product-art">${imageMarkup}</div>
+            <div class="payment-order-product-info">
+              <strong>${product.name}</strong>
+              <span>${product.category} · Quantity: ${item.quantity}</span>
+            </div>
+            <strong class="payment-order-item-price">${formatRupees(
+              getPriceAmount(product) * item.quantity
+            )}</strong>
+          </article>
+        `;
+      }).join("");
+    }
   }
   if (upiIdElement) {
     upiIdElement.textContent = STORE.upiId;
@@ -630,18 +665,25 @@ function updatePaymentPage(total) {
   if (emptyNotice) {
     emptyNotice.hidden = amount > 0;
   }
-  if (payLink) {
-    const parameters = new URLSearchParams({
+  const parameters = new URLSearchParams({
       pa: STORE.upiId,
       pn: STORE.upiPayeeName,
       am: amount.toFixed(2),
       cu: "INR",
       tn: `${STORE.brandName} order`
     });
-    payLink.href = amount > 0 ? `upi://pay?${parameters.toString()}` : "#payment";
-    payLink.setAttribute("aria-disabled", String(amount <= 0));
-    payLink.tabIndex = amount > 0 ? 0 : -1;
-    payLink.classList.toggle("is-disabled", amount <= 0);
+  payLinks.forEach(function (link) {
+    link.href = amount > 0 ? `upi://pay?${parameters.toString()}` : "#payment";
+    link.setAttribute("aria-disabled", String(amount <= 0));
+    link.tabIndex = amount > 0 ? 0 : -1;
+    link.classList.toggle("is-disabled", amount <= 0);
+  });
+  if (paymentMessageLink) {
+    paymentMessageLink.href = amount > 0
+      ? STORE.instagramUrl
+      : "#payment";
+    paymentMessageLink.setAttribute("aria-disabled", String(amount <= 0));
+    paymentMessageLink.classList.toggle("is-disabled", amount <= 0);
   }
 }
 
@@ -980,10 +1022,6 @@ document.addEventListener("click", function (event) {
     document.getElementById("cart-dialog")?.close();
     return;
   }
-  if (event.target.closest("#payment-back-cart")) {
-    document.getElementById("cart-dialog")?.showModal();
-    return;
-  }
   if (event.target.closest("#cart-proceed-payment")) {
     if (cartItems.length === 0) {
       showCartToast("Add a product to your cart before proceeding to payment.");
@@ -997,17 +1035,13 @@ document.addEventListener("click", function (event) {
   }
 
   if (event.target.closest("#payment-copy-upi")) {
-    if (!navigator.clipboard?.writeText) {
-      showCartToast("Copy the UPI ID shown on this page.");
-      return;
-    }
-
-    navigator.clipboard.writeText(STORE.upiId).then(function () {
-      showCartToast("UPI ID copied.");
-    }).catch(function (error) {
-      console.error("Could not copy the UPI ID.", error);
-      showCartToast("Copy the UPI ID shown on this page.");
-    });
+    copyPaymentText(STORE.upiId, "UPI ID copied.");
+    return;
+  }
+  const paymentMessageLink = event.target.closest("#payment-instagram-message");
+  if (paymentMessageLink && paymentMessageLink.getAttribute("aria-disabled") === "true") {
+    event.preventDefault();
+    showCartToast("Add a product to your cart before messaging about payment.");
     return;
   }
 
@@ -1029,6 +1063,42 @@ document.addEventListener("click", function (event) {
     block: "start"
   });
 });
+
+function copyPaymentText(text, successMessage) {
+  function showCopyFallback() {
+    const copyField = document.createElement("textarea");
+    copyField.value = text;
+    copyField.setAttribute("readonly", "");
+    copyField.style.position = "fixed";
+    copyField.style.opacity = "0";
+    document.body.appendChild(copyField);
+    copyField.select();
+
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } finally {
+      copyField.remove();
+    }
+
+    if (copied) {
+      showCartToast(successMessage);
+    } else {
+      showCartToast("Copy failed. Select and copy the payment details manually.");
+    }
+  }
+
+  if (!navigator.clipboard?.writeText) {
+    showCopyFallback();
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(function () {
+    showCartToast(successMessage);
+  }).catch(function () {
+    showCopyFallback();
+  });
+}
 
 document.addEventListener("visibilitychange", function () {
   if (document.hidden) {
