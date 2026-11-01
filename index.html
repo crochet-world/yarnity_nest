@@ -13,21 +13,29 @@
 <body>
   <div class="announcement">Handmade with love · Little things, thoughtfully made</div>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="yarnity_nest home">
+    <a class="brand" href="#home" data-route-link="home" aria-label="yarnity_nest home">
       <img class="brand-logo" src="images/yarnity-nest-logo.png" alt="yarnity_nest logo">
       <span><strong id="brand-name">yarnity_nest</strong><small>HANDMADE CROCHET</small></span>
     </a>
-    <nav aria-label="Main navigation"><a href="#shop">Shop</a><a href="#about">Our story</a></nav>
-    <a class="header-cta" id="header-whatsapp" href="#shop">Order with us ↗</a>
+    <nav aria-label="Main navigation">
+      <a class="is-active" href="#home" data-route-link="home" aria-current="page">Home</a>
+      <a href="#shop" data-route-link="shop">Shop</a>
+      <a href="#about" data-route-link="about">Our story</a>
+      <a href="#order" data-route-link="order">Order</a>
+    </nav>
+    <button class="header-cart" id="cart-open" type="button" aria-label="Open cart, 0 items">
+      <span aria-hidden="true">♡</span> Cart <span class="cart-count" id="cart-count">0</span>
+    </button>
   </header>
 
   <main>
-    <section class="hero">
+    <section class="hero" data-route-view="home">
       <div class="hero-copy">
         <p class="eyebrow">SMALL-BATCH · HANDMADE · HEARTFELT</p>
         <h1>Little things,<br><em>made with love.</em></h1>
-        <p class="hero-description">Handmade crochet gifts, everyday bags, cute bag charms, tea coasters and hair accessories — each stitch made with care.</p>
-        <div class="hero-actions"><a class="button button-dark" href="#shop">Explore the collection <span>↓</span></a></div>
+        <p class="hero-description">At yarnity_nest, every piece begins with yarn, patience and a little imagination. From cheerful crochet blooms to tiny gifts and cozy home accents, each creation is made stitch by stitch.</p>
+        <p class="hero-thank-you">Thank you for supporting handmade and helping small creative businesses grow.</p>
+        <div class="hero-actions"><a class="button hero-primary" href="#shop" data-route-link="shop">Explore the collection <span>↓</span></a><a class="button hero-secondary" href="#order" data-route-link="order">How to order</a></div>
         <div class="hero-note"><span class="dot"></span> Made slowly. Loved forever.</div>
       </div>
       <div class="hero-art" aria-label="Decorative crochet-inspired shapes">
@@ -38,35 +46,184 @@
       </div>
     </section>
 
-    <section class="trust-strip"><span>✳ Thoughtfully handmade</span><span>✳ Custom colours available</span><span>✳ Packed with care</span></section>
+    <section class="home-favorites section" data-route-view="home">
+      <div class="favorites-heading">
+        <div><p class="eyebrow">A FEW FAVOURITES</p><h2>Made in small batches.</h2></div>
+        <a class="favorites-view-all" href="#shop" data-route-link="shop">View all pieces <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="favorites-grid">
+        <article class="favorite-card">
+          <div class="favorite-art"><span class="favorite-badge">BEST SELLER</span><button class="favorite-toggle" type="button" data-favorite-name="Bag Charm 1" aria-label="Add Bag Charm 1 to favourites" aria-pressed="false">♡</button><img src="images/KeyRing1.jpeg" alt="Crochet bag charm"></div>
+          <div class="favorite-product-heading"><h3>Bag Charm 1</h3><strong>Add price</strong></div>
+          <p>Bag charms &amp; keychains</p>
+        </article>
+        <article class="favorite-card">
+          <div class="favorite-art"><span class="favorite-badge">NEW</span><button class="favorite-toggle" type="button" data-favorite-name="Tea Coaster" aria-label="Add Tea Coaster to favourites" aria-pressed="false">♡</button><img src="images/Tea_Coaster1.jpeg" alt="Handmade crochet tea coaster"></div>
+          <div class="favorite-product-heading"><h3>Tea Coaster</h3><strong>Add price</strong></div>
+          <p>Tea coasters</p>
+        </article>
+        <article class="favorite-card">
+          <div class="favorite-art"><button class="favorite-toggle" type="button" data-favorite-name="Hair Accessory 1" aria-label="Add Hair Accessory 1 to favourites" aria-pressed="false">♡</button><img src="images/HairItems1.jpeg" alt="Handmade crochet hair accessory"></div>
+          <div class="favorite-product-heading"><h3>Hair Accessory 1</h3><strong>Add price</strong></div>
+          <p>Hair accessories</p>
+        </article>
+        <article class="favorite-card">
+          <div class="favorite-art"><span class="favorite-badge">GIFTABLE</span><button class="favorite-toggle" type="button" data-favorite-name="Bag Charm 2" aria-label="Add Bag Charm 2 to favourites" aria-pressed="false">♡</button><img src="images/Key_Ring2.jpeg" alt="Crochet key ring"></div>
+          <div class="favorite-product-heading"><h3>Bag Charm 2</h3><strong>Add price</strong></div>
+          <p>Bag charms &amp; keychains</p>
+        </article>
+        <article class="favorite-card">
+          <div class="favorite-art"><button class="favorite-toggle" type="button" data-favorite-name="Hair Accessory 2" aria-label="Add Hair Accessory 2 to favourites" aria-pressed="false">♡</button><img src="images/HairItems2.jpeg" alt="Handmade crochet hair accessory"></div>
+          <div class="favorite-product-heading"><h3>Hair Accessory 2</h3><strong>Add price</strong></div>
+          <p>Hair accessories</p>
+        </article>
+      </div>
+    </section>
 
-    <section class="shop section" id="shop">
-      <div class="section-heading"><div><p class="eyebrow">THE LITTLE SHOP</p><h2>Shop by category.</h2></div><p class="section-intro">Browse the collection and find a handmade favourite.</p></div>
+    <section class="shop section" id="shop" data-route-view="shop">
+      <div class="section-heading shop-heading"><h2>Shop by category</h2><p class="section-intro">Browse the collection and find a handmade favourite.</p></div>
       <div id="category-grid" class="category-grid" aria-label="Shop by category"></div>
-      <div class="product-heading"><h3 id="selected-category-title">Gifts</h3><p>Product previews — photos and prices can be added as your shop grows.</p></div>
+      <div class="category-view-heading" id="category-view-heading" hidden>
+        <p class="category-breadcrumb"><a href="#shop" data-route-link="shop">Shop</a> / <span id="category-breadcrumb-name"></span></p>
+        <h2><span id="category-view-emoji"></span> <span id="category-view-name"></span></h2>
+        <p class="category-view-description" id="category-view-description"></p>
+      </div>
+      <p class="product-notice" id="product-notice" hidden>Product previews. Photos and prices will be added as the shop grows, so message us to confirm what is available.</p>
+      <nav class="category-tabs" id="category-tabs" aria-label="Product categories" hidden></nav>
+      <div class="product-heading"><h3 id="selected-category-title">Flowers</h3><p>Product previews — photos and prices can be added as your shop grows.</p></div>
       <div id="product-grid" class="product-grid" aria-live="polite"></div>
     </section>
 
-    <section class="story section" id="about">
+    <section class="story section" id="about" data-route-view="about">
       <div class="story-art"><div class="story-circle">♡</div><span class="story-sticker">MADE BY HAND<br>WITH HEART</span></div>
-      <div class="story-copy"><p class="eyebrow">A NOTE FROM THE MAKER</p><h2>Not factory-made.<br><em>Heart-made.</em></h2><p>At yarnity_nest, every piece begins with yarn, patience and a little imagination. From cheerful crochet blooms to tiny gifts and cozy home accents, each creation is made stitch by stitch.</p><p>Thank you for supporting handmade and helping small creative businesses grow.</p><a class="text-link" id="story-whatsapp" href="#shop">Say hello ↗</a></div>
+      <div class="story-copy"><p class="eyebrow">A NOTE FROM THE MAKER</p><h2>Not factory-made. <em>Heart-made.</em></h2><p>At yarnity_nest, every piece begins with yarn, patience and a little imagination. From cheerful crochet blooms to tiny gifts and cozy home accents, each creation is made stitch by stitch.</p><p class="story-thank-you">Thank you for supporting handmade and helping small creative businesses grow.</p></div>
     </section>
 
+    <section class="story-order-cta" data-route-view="about">
+      <p class="eyebrow">HAVE SOMETHING SPECIAL IN MIND?</p>
+      <h2>Let's make a little something for you.</h2>
+      <a class="button" href="#order" data-route-link="order">Start an order <span aria-hidden="true">→</span></a>
+    </section>
 
-    <section class="details section">
-      <div><span class="detail-icon">✿</span><h3>Made with care</h3><p>Handmade in small batches, with attention to every detail.</p></div>
-      <div><span class="detail-icon">♡</span><h3>Thoughtful details</h3><p>Small handmade pieces, created stitch by stitch.</p></div>
-      <div><span class="detail-icon">✉</span><h3>Easy ordering</h3><p>Message us directly to confirm availability, delivery and payment.</p></div>
+    <section class="order-page" id="order" data-route-view="order">
+      <section class="order-intro">
+        <div class="order-copy">
+          <p class="eyebrow">MADE JUST FOR YOU</p>
+          <h1>Let's make something <em>lovely.</em></h1>
+          <p>Every piece is made to order in small batches. Tell us what caught your eye, your preferred colours and your delivery city.</p>
+          <div class="order-actions">
+            <a class="button order-start-link" href="#order">Start your order <span aria-hidden="true">→</span></a>
+            <a class="button order-how-it-works" href="#how-it-works">How it works</a>
+          </div>
+        </div>
+        <div class="order-hero-art hero-art" aria-hidden="true">
+          <div class="sun"></div><div class="art-card art-card-one"><span>✿</span><small>made by hand</small></div>
+          <div class="art-card art-card-two"><span>♡</span><small>made for you</small></div>
+          <div class="thread thread-one"></div><div class="thread thread-two"></div>
+          <div class="hero-caption">A little handmade<br>happiness.</div>
+        </div>
+      </section>
+
+      <section class="order-process">
+        <div class="order-process-heading">
+          <p class="eyebrow">A LITTLE LESS PROCESS</p>
+          <h2>Ordering should feel easy.</h2>
+          <p>No complicated checkout. Just a friendly conversation so we can make the right thing for you.</p>
+        </div>
+        <div class="order-steps" id="how-it-works">
+          <article><span>01</span><h3>Choose</h3><p>Pick a piece from the collection or tell us what you have in mind.</p></article>
+          <article><span>02</span><h3>Personalise</h3><p>Share your colour preferences and any little details you'd like.</p></article>
+          <article><span>03</span><h3>We'll make it</h3><p>We'll confirm availability, delivery and payment before we begin.</p></article>
+        </div>
+        <div class="order-details">
+          <div class="order-contact-card" id="start-an-order">
+            <p class="eyebrow">SAY WHEN YOU ARE</p>
+            <h3>Let's create your little something.</h3>
+            <p>Message us with what you like and we'll help you with colours, availability and delivery.</p>
+            <div class="order-actions">
+              <a class="button order-instagram" href="https://www.instagram.com/yarnity_nest/" target="_blank" rel="noreferrer">Message on Instagram</a>
+              <a class="button order-whatsapp order-whatsapp-contact" href="#">Message on WhatsApp</a>
+            </div>
+          </div>
+          <div class="order-promise-card">
+            <article><span>✿</span><div><h3>Made to order</h3><p>We make each piece with care, just for you.</p></div></article>
+            <article><span>♡</span><div><h3>Custom colours</h3><p>Ask us about colours and small custom details.</p></div></article>
+            <article><span>✉</span><div><h3>Friendly help</h3><p>We'll guide you through availability and delivery.</p></div></article>
+            <article><span>→</span><div><h3>Delivery</h3><p>We'll confirm delivery options for your location.</p></div></article>
+          </div>
+        </div>
+        <p class="order-note">✳ Thoughtfully handmade · Little things, thoughtfully made</p>
+      </section>
+
+      <section class="order-faq">
+        <p class="eyebrow">A FEW LITTLE ANSWERS</p>
+        <h2>Frequently asked questions.</h2>
+        <div class="order-faq-list">
+          <details><summary>How long does an order take?</summary><p>Timing depends on the piece. Message us and we'll confirm an estimate before you order.</p></details>
+          <details><summary>Can I request a different colour?</summary><p>Yes, custom colours may be available. Tell us what you have in mind when you message.</p></details>
+          <details><summary>Can I order something custom?</summary><p>We love hearing your ideas. Send us a message and we'll let you know what we can make.</p></details>
+        </div>
+      </section>
+    </section>
+
+    <section class="payment-page section" data-route-view="payment">
+      <div class="payment-card">
+        <p class="eyebrow">SECURE YOUR HANDMADE ORDER</p>
+        <h1>Pay with UPI</h1>
+        <p class="payment-intro">Review your order total, then continue in your preferred UPI app.</p>
+        <div class="payment-amount">
+          <span>Amount to pay</span>
+          <strong id="payment-total">₹0</strong>
+        </div>
+        <p class="payment-empty-message" id="payment-empty-message" hidden>Your cart is empty. Add a product before proceeding to payment.</p>
+        <div class="payment-recipient">
+          <span>Pay to</span>
+          <strong id="payment-payee-name">Kaushal Kumar</strong>
+          <span class="payment-upi-row"><span id="payment-upi-id">9674961450@ybl</span><button id="payment-copy-upi" type="button">Copy UPI ID</button></span>
+        </div>
+        <a class="button payment-pay-button" id="upi-pay-link" href="#" aria-label="Pay using a UPI app">Pay using UPI</a>
+          <p class="payment-fallback">If no UPI app opens, open your UPI app manually and pay the amount above to the UPI ID shown here.</p>
+          <ol class="payment-instructions">
+          <li>Tap “Pay using UPI” and choose your UPI app.</li>
+          <li>Confirm the recipient and amount in your UPI app before paying.</li>
+          <li>Complete the payment in your UPI app. This website cannot verify payments automatically.</li>
+        </ol>
+        <button class="button payment-back-button" id="payment-back-cart" type="button">Return to cart</button>
+      </div>
+    </section>
+
+    <section class="details section" data-route-view="home">
+      <div class="details-heading"><p class="eyebrow">THE YARNITY_NEST PROMISE</p><h2>Why handmade?</h2></div>
+      <div class="details-grid">
+        <article class="detail-card"><span class="detail-icon" aria-hidden="true">🧶</span><h3>Made<br>slowly</h3><p>Every stitch gets time and attention. No rush, no mass production.</p></article>
+        <article class="detail-card"><span class="detail-icon" aria-hidden="true">🌿</span><h3>Small<br>batches</h3><p>Thoughtful quantities, fresh designs and little surprises along the way.</p></article>
+        <article class="detail-card"><span class="detail-icon" aria-hidden="true">♡</span><h3>Made for<br>gifting</h3><p>Sweet, useful pieces designed to bring a little warmth to someone's day.</p></article>
+      </div>
     </section>
   </main>
 
-  <footer><a class="brand footer-brand" href="#"><img class="brand-logo" src="images/yarnity-nest-logo.png" alt="yarnity_nest logo"><span><strong id="footer-brand-name">yarnity_nest</strong><small>MADE WITH LOVE</small></span></a><p>Handmade, one stitch at a time.</p><div class="footer-links"><a id="instagram-link" href="https://www.instagram.com/yarnity_nest/" target="_blank" rel="noreferrer">Instagram ↗</a><a id="footer-whatsapp" href="#shop">WhatsApp ↗</a></div><small class="copyright">© <span id="year"></span> <span id="copyright-name">yarnity_nest</span>. All handmade, all heart.</small></footer>
+  <footer><a class="brand footer-brand" href="#home" data-route-link="home"><img class="brand-logo" src="images/yarnity-nest-logo.png" alt="yarnity_nest logo"><span><strong id="footer-brand-name">yarnity_nest</strong><small>MADE WITH LOVE</small></span></a><p>Handmade, one stitch at a time.</p><div class="footer-links"><a class="contact-cta" id="instagram-link" href="https://www.instagram.com/yarnity_nest/" target="_blank" rel="noreferrer">Message on Instagram</a><a class="contact-cta" id="footer-whatsapp" href="#shop">Message on WhatsApp</a></div><small class="copyright">© <span id="year"></span> <span id="copyright-name">yarnity_nest</span>. All handmade, all heart.</small></footer>
 
   <dialog class="image-preview" id="image-preview" aria-label="Enlarged product image">
     <button class="image-preview-close" type="button" aria-label="Close image preview">&times;</button>
     <img id="image-preview-photo" alt="">
     <p id="image-preview-caption"></p>
   </dialog>
+
+  <dialog class="cart-dialog" id="cart-dialog" aria-labelledby="cart-title">
+    <div class="cart-dialog-header">
+      <h2 id="cart-title">Your cart</h2>
+      <button class="cart-close" id="cart-close" type="button" aria-label="Close cart">&times;</button>
+    </div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-summary">
+      <strong>Total cart value</strong>
+      <strong id="cart-total">₹0</strong>
+    </div>
+    <p class="cart-pricing-note">Review your items and total before proceeding to payment.</p>
+    <button class="button cart-continue" id="cart-proceed-payment" type="button">Proceed to payment</button>
+  </dialog>
+  <div class="cart-toast" id="cart-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script src="script.js"></script>
 </body>
