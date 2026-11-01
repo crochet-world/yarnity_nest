@@ -964,6 +964,18 @@ document.addEventListener("click", function (event) {
     document.getElementById("cart-dialog")?.showModal();
     return;
   }
+  if (event.target.closest("#account-open")) {
+    document.getElementById("account-dialog")?.showModal();
+    return;
+  }
+  if (event.target.closest("#account-close")) {
+    document.getElementById("account-dialog")?.close();
+    return;
+  }
+  if (event.target.closest("#account-login")) {
+    showCartToast("Sign-in is unavailable because no authentication provider is configured.");
+    return;
+  }
   if (event.target.closest("#cart-close")) {
     document.getElementById("cart-dialog")?.close();
     return;

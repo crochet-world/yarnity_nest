@@ -23,9 +23,12 @@
       <a href="#about" data-route-link="about">Our story</a>
       <a href="#order" data-route-link="order">Order</a>
     </nav>
-    <button class="header-cart" id="cart-open" type="button" aria-label="Open cart, 0 items">
-      <span aria-hidden="true">♡</span> Cart <span class="cart-count" id="cart-count">0</span>
-    </button>
+    <div class="header-actions">
+      <button class="header-cart" id="cart-open" type="button" aria-label="Open cart, 0 items">
+        <span aria-hidden="true">♡</span> Cart <span class="cart-count" id="cart-count">0</span>
+      </button>
+      <button class="header-account" id="account-open" type="button">Account</button>
+    </div>
   </header>
 
   <main>
@@ -222,6 +225,15 @@
     </div>
     <p class="cart-pricing-note">Review your items and total before proceeding to payment.</p>
     <button class="button cart-continue" id="cart-proceed-payment" type="button">Proceed to payment</button>
+  </dialog>
+  <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-title">
+    <div class="cart-dialog-header">
+      <h2 id="account-title">Your account</h2>
+      <button class="cart-close" id="account-close" type="button" aria-label="Close account">&times;</button>
+    </div>
+    <p class="account-signed-out">You are not logged in.</p>
+    <button class="button account-login" id="account-login" type="button">Log In</button>
+    <p class="account-setup-note">Sign-in is not set up yet. Please check back soon.</p>
   </dialog>
   <div class="cart-toast" id="cart-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
