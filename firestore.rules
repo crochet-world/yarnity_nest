@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /orders/{orderId} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId}/addresses/{addressId} {
+      function isOwner() {
+        return request.auth != null &&
+          request.auth.uid == userId &&
+          addressId.matches('^[A-Za-z0-9_-]{1,128}$');
+      }
+
+      function hasValidAddress() {
+        return request.resource.data.keys().hasOnly([
+            "label",
+            "addressLine1",
+            "addressLine2",
+            "city",
+            "state",
+            "postalCode",
+            "country",
+            "isDefault",
+            "updatedAt"
+          ]) &&
+          request.resource.data.keys().hasAll([
+            "label",
+            "addressLine1",
+            "addressLine2",
+            "city",
+            "state",
+            "postalCode",
+            "country",
+            "isDefault",
+            "updatedAt"
+          ]) &&
+          request.resource.data.label is string &&
+          request.resource.data.label.size() > 0 &&
+          request.resource.data.label.size() <= 40 &&
+          request.resource.data.addressLine1 is string &&
+          request.resource.data.addressLine1.size() > 0 &&
+          request.resource.data.addressLine1.size() <= 120 &&
+          request.resource.data.addressLine2 is string &&
+          request.resource.data.addressLine2.size() <= 120 &&
+          request.resource.data.city is string &&
+          request.resource.data.city.size() > 0 &&
+          request.resource.data.city.size() <= 80 &&
+          request.resource.data.state is string &&
+          request.resource.data.state.size() > 0 &&
+          request.resource.data.state.size() <= 80 &&
+          request.resource.data.postalCode is string &&
+          request.resource.data.postalCode.matches('^[A-Za-z0-9 -]{3,12}$') &&
+          request.resource.data.country is string &&
+          request.resource.data.country.size() > 0 &&
+          request.resource.data.country.size() <= 60 &&
+          request.resource.data.isDefault is bool &&
+          request.resource.data.updatedAt == request.time;
+      }
+
+      allow get: if isOwner();
+      allow list: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if isOwner() && hasValidAddress();
+      allow delete: if isOwner();
+    }
+  }
+}

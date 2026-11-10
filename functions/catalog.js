@@ -1,0 +1,51 @@
+const products = [
+  ["Gift idea 1", "Gifts", 40000],
+  ["Gift idea 2", "Gifts", 40000],
+  ["Gift idea 3", "Gifts", 40000],
+  ["Gift idea 4", "Gifts", 40000],
+  ["Gift idea 5", "Gifts", 40000],
+  ["Crochet bag 1", "Bags", 40000],
+  ["Crochet bag 2", "Bags", 40000],
+  ["Crochet bag 3", "Bags", 40000],
+  ["Crochet bag 4", "Bags", 40000],
+  ["Crochet bag 5", "Bags", 40000],
+  ["Bag charm / keychain 1", "Bag charms", 30000],
+  ["Bag charm / keychain 2", "Bag charms", 35000],
+  ["Bag charm / keychain 3", "Bag charms", 40000],
+  ["Bag charm / keychain 4", "Bag charms", 40000],
+  ["Bag charm / keychain 5", "Bag charms", 40000],
+  ["Tea coaster 1", "Tea Coasters", 40000],
+  ["Tea coaster 2", "Tea Coasters", 40000],
+  ["Tea coaster 3", "Tea Coasters", 40000],
+  ["Tea coaster 4", "Tea Coasters", 40000],
+  ["Tea coaster 5", "Tea Coasters", 40000],
+  ["Hair accessory 1", "Hair Accessories", 25000],
+  ["Hair accessory 2", "Hair Accessories", 20000],
+  ["Hair accessory 3", "Hair Accessories", 40000],
+  ["Hair accessory 4", "Hair Accessories", 40000],
+  ["Hair accessory 5", "Hair Accessories", 40000],
+  ["Flowers idea 1", "Flowers", 40000],
+  ["Flowers idea 2", "Flowers", 40000],
+  ["Flowers idea 3", "Flowers", 40000],
+  ["Flowers idea 4", "Flowers", 40000],
+  ["Flowers idea 5", "Flowers", 40000],
+  ["Plushies idea 1", "Plushies", 40000],
+  ["Plushies idea 2", "Plushies", 40000],
+  ["Plushies idea 3", "Plushies", 40000],
+  ["Plushies idea 4", "Plushies", 40000],
+  ["Plushies idea 5", "Plushies", 40000],
+  ["Keychains idea 1", "Keychains", 40000],
+  ["Keychains idea 2", "Keychains", 40000],
+  ["Keychains idea 3", "Keychains", 40000],
+  ["Keychains idea 4", "Keychains", 40000],
+  ["Keychains idea 5", "Keychains", 40000]
+];
+
+module.exports = products.map(function (product, productIndex) {
+  return {
+    productIndex: productIndex,
+    name: product[0],
+    category: product[1],
+    unitPricePaise: product[2]
+  };
+});

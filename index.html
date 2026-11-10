@@ -27,7 +27,33 @@
       <button class="header-cart" id="cart-open" type="button" aria-label="Open cart, 0 items">
         <span aria-hidden="true">♡</span> Cart <span class="cart-count" id="cart-count">0</span>
       </button>
-      <button class="header-account" id="account-open" type="button">Account</button>
+      <button class="header-account" id="account-open" type="button" aria-label="Account" aria-haspopup="true" aria-expanded="false" aria-controls="account-menu">
+        <svg class="header-account-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <circle cx="12" cy="9" r="3"></circle>
+          <path d="M6.8 18c.8-2.4 2.7-3.6 5.2-3.6s4.4 1.2 5.2 3.6"></path>
+        </svg>
+        <span id="header-account-name">Account</span>
+        <span class="header-account-chevron" aria-hidden="true"></span>
+      </button>
+      <div class="account-menu" id="account-menu" aria-label="Account options" hidden>
+        <p class="account-menu-heading">Your Account</p>
+        <button type="button" data-account-menu-action="profile">
+          <span class="account-menu-icon" aria-hidden="true">◎</span>My Profile
+        </button>
+        <button type="button" data-account-menu-action="orders">
+          <span class="account-menu-icon" aria-hidden="true">□</span>Orders
+        </button>
+        <button type="button" data-account-menu-action="wishlist">
+          <span class="account-menu-icon" aria-hidden="true">♡</span>Wishlist
+        </button>
+        <button type="button" data-account-menu-action="address">
+          <span class="account-menu-icon" aria-hidden="true">⌖</span>Saved Address
+        </button>
+        <button class="account-menu-signout" type="button" data-account-menu-action="signout">
+          <span class="account-menu-icon" aria-hidden="true">↪</span>Sign Out
+        </button>
+      </div>
     </div>
   </header>
 
@@ -185,37 +211,227 @@
           <span>✦ Small batch</span>
           <span>♡ Made for you</span>
         </div>
-        <p class="payment-order-tip">Tip: Confirm the payee and amount in your UPI app before completing payment.</p>
+        <p class="payment-order-tip">Your order is confirmed after Razorpay verifies your payment.</p>
       </section>
       <section class="payment-card" aria-labelledby="payment-heading">
         <p class="eyebrow">SECURE YOUR HANDMADE ORDER</p>
         <h1 id="payment-heading">Payment options</h1>
-        <p class="payment-intro">Review your order total, then continue in your preferred UPI app.</p>
+        <p class="payment-intro">Enter your contact details, then pay securely using Razorpay.</p>
         <div class="payment-amount">
           <span>Amount to pay</span>
           <strong id="payment-total">₹0</strong>
         </div>
         <p class="payment-empty-message" id="payment-empty-message" hidden>Your cart is empty. Add a product before proceeding to payment.</p>
-        <figure class="payment-qr">
-          <img src="images/upi-qr.png" alt="UPI payment QR code supplied by the account holder">
-          <figcaption>Scan with your UPI app. Enter the amount shown above if your app asks for it, and verify the payee before paying.</figcaption>
-        </figure>
-        <div class="payment-recipient">
-          <span class="payment-recipient-label">Pay to</span>
-          <strong id="payment-payee-name">Kaushal Kumar</strong>
-          <span class="payment-upi-row"><span id="payment-upi-id">9674961450@ybl</span><button id="payment-copy-upi" type="button">Copy UPI ID</button></span>
-        </div>
-        <a class="button payment-pay-button" id="upi-pay-link" href="#" aria-label="Pay with UPI ID">Pay with UPI ID</a>
-        <p class="payment-fallback">On a computer, scan the QR code and enter the amount shown above if your UPI app asks for it.</p>
-        <ol class="payment-instructions">
-          <li>Pay the exact amount using the QR code or UPI button.</li>
-          <li>Take a screenshot of your successful payment.</li>
-          <li>Send it to us on Instagram so we can confirm your order.</li>
-        </ol>
-        <a class="button payment-message-button" id="payment-instagram-message" href="#" target="_blank" rel="noreferrer">I have paid, message us</a>
-        <a class="button payment-back-button" href="#shop" data-route-link="shop">Continue shopping</a>
-        <p class="payment-disclaimer">This website cannot verify payments automatically. We will confirm your order after checking your payment.</p>
+        <form class="checkout-contact-form" id="checkout-contact-form">
+          <label for="checkout-customer-name">Full name</label>
+          <input id="checkout-customer-name" name="name" autocomplete="name" maxlength="100" required>
+          <label for="checkout-customer-email">Email address</label>
+          <input id="checkout-customer-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+          <label for="checkout-customer-phone">WhatsApp number</label>
+          <input id="checkout-customer-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" pattern="[+0-9() -]{8,20}" placeholder="+91 98765 43210" required>
+          <p class="checkout-contact-note">Include your country code. We’ll send your payment confirmation to your email and WhatsApp.</p>
+          <div class="checkout-address-heading">
+            <h2>Delivery address</h2>
+            <label class="checkout-saved-address-picker" id="checkout-saved-address-picker" hidden>
+              <span class="visually-hidden">Saved delivery addresses</span>
+              <select id="checkout-saved-address-select" aria-label="Saved delivery address"></select>
+              <button class="account-edit-button" id="checkout-use-saved-address" type="button">Use selected</button>
+            </label>
+          </div>
+          <label for="checkout-address-line1">Address line 1</label>
+          <input id="checkout-address-line1" name="addressLine1" autocomplete="address-line1" maxlength="120" required>
+          <label for="checkout-address-line2">Address line 2 <span>(optional)</span></label>
+          <input id="checkout-address-line2" name="addressLine2" autocomplete="address-line2" maxlength="120">
+          <div class="checkout-address-fields">
+            <div>
+              <label for="checkout-address-city">City</label>
+              <input id="checkout-address-city" name="city" autocomplete="address-level2" maxlength="80" required>
+            </div>
+            <div>
+              <label for="checkout-address-state">State</label>
+              <input id="checkout-address-state" name="state" autocomplete="address-level1" maxlength="80" required>
+            </div>
+            <div>
+              <label for="checkout-address-postal-code">PIN / postal code</label>
+              <input id="checkout-address-postal-code" name="postalCode" autocomplete="postal-code" maxlength="12" pattern="[A-Za-z0-9\- ]{3,12}" required>
+            </div>
+            <div>
+              <label for="checkout-address-country">Country</label>
+              <input id="checkout-address-country" name="country" autocomplete="country-name" maxlength="60" value="India" required>
+            </div>
+          </div>
+          <label class="checkout-consent"><input name="notificationConsent" type="checkbox" required> I agree to receive order updates by email and WhatsApp.</label>
+          <button class="button payment-pay-button" id="razorpay-checkout-button" type="submit">Continue to secure payment</button>
+        </form>
+        <p class="payment-status" id="payment-status" role="status" aria-live="polite"></p>
+        <p class="payment-disclaimer">Your order is confirmed only after Razorpay verifies the payment.</p>
       </section>
+    </section>
+
+    <section class="order-confirmation section" data-route-view="confirmation" aria-labelledby="confirmation-heading">
+      <div class="confirmation-card">
+        <p class="eyebrow" id="confirmation-eyebrow">PAYMENT STATUS</p>
+        <h1 id="confirmation-heading">Checking your payment…</h1>
+        <p id="confirmation-status" role="status" aria-live="polite">Checking your verified payment…</p>
+        <button class="button confirmation-retry" id="confirmation-retry" type="button" hidden>Check payment again</button>
+        <div id="confirmation-details" hidden>
+          <p>Order reference: <strong id="confirmation-order-id"></strong></p>
+          <p>Razorpay payment ID: <strong id="confirmation-payment-id"></strong></p>
+          <div class="confirmation-items" id="confirmation-items"></div>
+          <div class="confirmation-total"><span>Paid</span><strong id="confirmation-total"></strong></div>
+          <p>Confirmation sent to <strong id="confirmation-customer-email"></strong> and WhatsApp.</p>
+        </div>
+        <a class="button payment-back-button" href="#shop" data-route-link="shop">Continue shopping</a>
+      </section>
+    </section>
+
+    <section class="account-page section" data-route-view="account" aria-labelledby="account-page-heading">
+      <div class="account-auth-card">
+        <p class="eyebrow">YOUR YARNITY_NEST ACCOUNT</p>
+        <h1 id="account-page-heading">Welcome back</h1>
+        <p class="account-auth-intro">Sign in to your account, or create one to get started.</p>
+        <div class="account-auth-forms" id="account-auth-forms">
+          <form id="account-login-form">
+            <label for="account-login-email">Email address</label>
+            <input id="account-login-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+            <label for="account-login-password">Password</label>
+            <input id="account-login-password" name="password" type="password" autocomplete="current-password" required>
+            <button class="button account-auth-submit" type="submit">Log In</button>
+            <p class="account-auth-switch">First time here? <button type="button" data-auth-mode="signup">Create an account</button></p>
+          </form>
+          <form id="account-signup-form" hidden>
+            <label for="account-signup-name">Full name</label>
+            <input id="account-signup-name" name="name" autocomplete="name" maxlength="100" required>
+            <label for="account-signup-email">Email address</label>
+            <input id="account-signup-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+            <label for="account-signup-password">Create password</label>
+            <input id="account-signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+            <label for="account-signup-confirm">Confirm password</label>
+            <input id="account-signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+            <button class="button account-auth-submit" type="submit">Create account</button>
+            <p class="account-auth-switch">Already registered? <button type="button" data-auth-mode="login">Log in</button></p>
+          </form>
+        </div>
+        <p class="account-auth-status" id="account-auth-status" role="status" aria-live="polite"></p>
+        <div class="account-authenticated" id="account-authenticated" hidden>
+          <aside class="account-sidebar">
+            <div class="account-greeting">
+              <span class="account-avatar" id="account-avatar" aria-hidden="true">Y</span>
+              <span>Hello,<strong id="account-sidebar-name"></strong></span>
+            </div>
+            <nav class="account-sidebar-nav" aria-label="Profile sections">
+              <button type="button" class="account-sidebar-link" data-account-section="orders"><span aria-hidden="true">▣</span>My Orders<span class="account-nav-arrow" aria-hidden="true">›</span></button>
+              <p class="account-sidebar-label"><span aria-hidden="true">♙</span>Account Settings</p>
+              <button type="button" class="account-sidebar-link is-selected" data-account-section="profile">Profile Information</button>
+              <button type="button" class="account-sidebar-link" data-account-section="addresses">Manage Addresses</button>
+              <button type="button" class="account-sidebar-link" data-account-menu-action="wishlist"><span aria-hidden="true">♡</span>Wishlist</button>
+              <button type="button" class="account-sidebar-link account-sidebar-signout" data-account-menu-action="signout"><span aria-hidden="true">↪</span>Sign Out</button>
+            </nav>
+          </aside>
+          <div class="account-profile-content">
+            <section class="account-profile-panel" data-account-panel="profile" aria-labelledby="account-profile-heading">
+              <div class="account-profile-section-heading">
+                <h2 id="account-profile-heading">Personal Information</h2>
+                <button class="account-edit-button" id="account-profile-edit" type="button">Edit</button>
+              </div>
+              <form id="account-profile-form" class="account-profile-form">
+                <div class="account-name-fields">
+                  <label class="visually-hidden" for="account-profile-first-name">First name</label>
+                  <input id="account-profile-first-name" name="firstName" autocomplete="given-name" maxlength="50" placeholder="First name" readonly required>
+                  <label class="visually-hidden" for="account-profile-last-name">Last name</label>
+                  <input id="account-profile-last-name" name="lastName" autocomplete="family-name" maxlength="50" placeholder="Last name" readonly>
+                </div>
+                <div class="account-profile-readonly account-profile-contact-field">
+                  <label for="account-profile-email">Email Address</label>
+                  <input id="account-profile-email" name="email" type="email" autocomplete="email" maxlength="254" readonly required>
+                </div>
+                <div class="account-profile-readonly account-profile-contact-field">
+                  <label for="account-profile-phone">Mobile Number</label>
+                  <input id="account-profile-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="Add your mobile number" readonly>
+                </div>
+                <div class="account-profile-reauth" id="account-profile-reauth" hidden>
+                  <label for="account-profile-password">Current password for email or mobile changes</label>
+                  <input id="account-profile-password" name="currentPassword" type="password" autocomplete="current-password">
+                </div>
+                <div class="account-profile-actions" id="account-profile-actions" hidden>
+                  <button class="button account-profile-save" type="submit">Save</button>
+                  <button class="account-profile-cancel" id="account-profile-cancel" type="button">Cancel</button>
+                </div>
+                <p class="account-profile-status" id="account-profile-status" role="status" aria-live="polite"></p>
+              </form>
+              <div class="account-phone-verification" id="account-phone-verification" hidden>
+                <div id="account-phone-recaptcha"></div>
+                <button class="account-edit-button" id="account-phone-send-code" type="button">Send verification code</button>
+                <label for="account-phone-code">SMS verification code</label>
+                <input id="account-phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter code" hidden>
+                <button class="button account-profile-save" id="account-phone-confirm" type="button" hidden>Verify and update number</button>
+              </div>
+              <p class="account-profile-hint" id="account-profile-hint" hidden>Email and mobile number are used for your Firebase account. Changing either requires your current password; mobile changes are confirmed by SMS.</p>
+            </section>
+            <section class="account-profile-panel account-addresses-panel" data-account-panel="addresses" aria-labelledby="account-addresses-heading" hidden>
+              <div class="account-profile-section-heading">
+                <h2 id="account-addresses-heading">Manage Addresses</h2>
+                <button class="account-edit-button" id="account-addresses-add" type="button">Add address</button>
+              </div>
+              <p class="account-address-status" id="account-addresses-status" role="status" aria-live="polite"></p>
+              <div class="account-address-list" id="account-address-list"></div>
+              <form class="account-address-form" id="account-address-form" hidden>
+                <h3 id="account-address-form-heading">Add delivery address</h3>
+                <div class="account-address-fields">
+                  <div class="account-address-field">
+                    <label for="account-address-label">Address label</label>
+                    <input id="account-address-label" name="label" maxlength="40" placeholder="Home, Work, etc." required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-line1">Address line 1</label>
+                    <input id="account-address-line1" name="addressLine1" autocomplete="address-line1" maxlength="120" required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-line2">Address line 2 <span>(optional)</span></label>
+                    <input id="account-address-line2" name="addressLine2" autocomplete="address-line2" maxlength="120">
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-city">City</label>
+                    <input id="account-address-city" name="city" autocomplete="address-level2" maxlength="80" required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-state">State</label>
+                    <input id="account-address-state" name="state" autocomplete="address-level1" maxlength="80" required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-postal-code">PIN / postal code</label>
+                    <input id="account-address-postal-code" name="postalCode" autocomplete="postal-code" maxlength="12" pattern="[A-Za-z0-9\- ]{3,12}" required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-country">Country</label>
+                    <input id="account-address-country" name="country" autocomplete="country-name" maxlength="60" value="India" required>
+                  </div>
+                </div>
+                <label class="account-address-default">
+                  <input id="account-address-default" name="isDefault" type="checkbox">
+                  Set as default delivery address
+                </label>
+                <div class="account-profile-actions">
+                  <button class="button account-profile-save" id="account-address-save" type="submit">Save address</button>
+                  <button class="account-profile-cancel" id="account-address-cancel" type="button">Cancel</button>
+                </div>
+              </form>
+            </section>
+            <section class="account-profile-panel account-orders-panel" data-account-panel="orders" aria-labelledby="account-orders-heading" hidden>
+              <div class="account-profile-section-heading">
+                <h2 id="account-orders-heading">My Orders</h2>
+                <button class="account-edit-button" id="account-orders-refresh" type="button">Refresh</button>
+              </div>
+              <p class="account-orders-status" id="account-orders-status" role="status" aria-live="polite">Your orders will appear here.</p>
+              <p class="account-orders-verification-note" id="account-orders-verification-note" hidden>
+                To find older orders placed with this email, verify your email address.
+                <button class="account-edit-button" id="account-orders-verify-email" type="button">Send verification email</button>
+              </p>
+              <div class="account-orders-list" id="account-orders-list"></div>
+            </section>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="details section" data-route-view="home">
@@ -254,12 +470,18 @@
       <h2 id="account-title">Your account</h2>
       <button class="cart-close" id="account-close" type="button" aria-label="Close account">&times;</button>
     </div>
-    <p class="account-signed-out">You are not logged in.</p>
+    <p class="account-signed-out" id="account-dialog-message">You are not logged in.</p>
     <button class="button account-login" id="account-login" type="button">Log In</button>
-    <p class="account-setup-note">Sign-in is not set up yet. Please check back soon.</p>
+    <p class="account-setup-note">Log in or create an account on the next page.</p>
   </dialog>
   <div class="cart-toast" id="cart-toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="auth-config.js"></script>
+  <script src="payment-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
