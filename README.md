@@ -2,6 +2,8 @@
 
 Static storefront with a Firebase Functions backend for verified Razorpay payments and post-payment email/WhatsApp notifications.
 
+`account.js` contains Firebase authentication and customer account features, including profile, orders, wishlist, and saved addresses. `script.js` contains the storefront and checkout behavior.
+
 ## Run the storefront locally
 
 From the repository root, serve the files over HTTP (not `file://`):
@@ -39,7 +41,7 @@ The checkout uses Razorpay Orders and Checkout. The browser never decides the pa
    firebase functions:secrets:set WHATSAPP_ACCESS_TOKEN
    ```
 
-5. On first deployment, provide the non-secret parameters Firebase prompts for, including `RAZORPAY_KEY_ID`, `SHOP_EMAIL`, `SHOP_WHATSAPP`, `RESEND_FROM_EMAIL`, `WHATSAPP_PHONE_NUMBER_ID`, and `PUBLIC_SITE_ORIGINS`. Enter the shop email and WhatsApp destination you supplied; these destinations are not stored in the repository. `WHATSAPP_TEMPLATE_NAME`, `WHATSAPP_TEMPLATE_LANGUAGE`, and `WHATSAPP_GRAPH_API_VERSION` have defaults that you can change. Set `PUBLIC_SITE_ORIGINS` to the exact storefront origin(s), comma-separated; include your local development origin when testing (for example `http://127.0.0.1:5500,https://your-user.github.io`).
+5. On first deployment, provide the non-secret parameters Firebase prompts for, including `RAZORPAY_KEY_ID`, `SHOP_EMAIL`, `SHOP_WHATSAPP`, `RESEND_FROM_EMAIL`, and `WHATSAPP_PHONE_NUMBER_ID`. Enter the shop email and WhatsApp destination you supplied; these destinations are not stored in the repository. `WHATSAPP_TEMPLATE_NAME`, `WHATSAPP_TEMPLATE_LANGUAGE`, and `WHATSAPP_GRAPH_API_VERSION` have defaults that you can change. `functions/.env.yarnitynest` supplies `PUBLIC_SITE_ORIGINS` for the configured Firebase project. Keep each storefront origin exact (including scheme and port) and update that file when domains or local ports change.
 6. Deploy the Firestore rules and functions:
 
    ```powershell
@@ -65,7 +67,9 @@ The Account page provides Firebase Email/Password registration and login:
 
 Until these steps are completed, the Account page explains that authentication is not configured and does not pretend a login or registration succeeded.
 
-Signed-in customers can add, edit, and delete multiple labeled delivery addresses in **Manage Addresses**, and choose a saved address at checkout. Address documents are scoped to the owning Firebase UID by `firestore.rules`; deploy the updated Firestore rules and Functions before using saved addresses at checkout. The previous single default address is still recognized and remains editable.
+Signed-in customers can add, edit, and delete multiple delivery addresses in **Manage Addresses**, including a recipient name, address type, and optional mobile number, then choose a saved address at checkout. For Indian addresses, entering a six-digit PIN code looks up and fills City and State; both fields remain editable. Address documents are scoped to the owning Firebase UID by `firestore.rules`; deploy the updated Firestore rules and Functions before using saved addresses at checkout. The previous single default address is still recognized and remains editable.
+
+Wishlist items are saved to the signed-in customer’s `users/{uid}/wishlist` collection and cached locally per account so they remain available after signing out and back in on the same browser. Deploy the updated Firestore rules to enable account-wide synchronization across devices.
 
 ## Customer order history
 

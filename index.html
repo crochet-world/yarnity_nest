@@ -27,13 +27,13 @@
       <button class="header-cart" id="cart-open" type="button" aria-label="Open cart, 0 items">
         <span aria-hidden="true">♡</span> Cart <span class="cart-count" id="cart-count">0</span>
       </button>
-      <button class="header-account" id="account-open" type="button" aria-label="Account" aria-haspopup="true" aria-expanded="false" aria-controls="account-menu">
+      <button class="header-account" id="account-open" type="button" aria-label="Hello, sign in" aria-haspopup="true" aria-expanded="false" aria-controls="account-menu">
         <svg class="header-account-icon" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle>
           <circle cx="12" cy="9" r="3"></circle>
           <path d="M6.8 18c.8-2.4 2.7-3.6 5.2-3.6s4.4 1.2 5.2 3.6"></path>
         </svg>
-        <span id="header-account-name">Account</span>
+        <span id="header-account-name">Hello, sign in</span>
         <span class="header-account-chevron" aria-hidden="true"></span>
       </button>
       <div class="account-menu" id="account-menu" aria-label="Account options" hidden>
@@ -107,6 +107,14 @@
           <p>Hair accessories</p>
         </article>
       </div>
+    </section>
+
+    <section class="home-new-arrivals section" data-route-view="home" aria-labelledby="new-arrivals-heading">
+      <div class="favorites-heading">
+        <div><p class="eyebrow">JUST ADDED</p><h2 id="new-arrivals-heading">New Arrivals</h2></div>
+        <a class="favorites-view-all" href="#shop" data-route-link="shop">Shop all <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="new-arrivals-grid" id="new-arrivals-grid"></div>
     </section>
 
     <section class="shop section" id="shop" data-route-view="shop">
@@ -320,11 +328,11 @@
               <span>Hello,<strong id="account-sidebar-name"></strong></span>
             </div>
             <nav class="account-sidebar-nav" aria-label="Profile sections">
-              <button type="button" class="account-sidebar-link" data-account-section="orders"><span aria-hidden="true">▣</span>My Orders<span class="account-nav-arrow" aria-hidden="true">›</span></button>
+              <button type="button" class="account-sidebar-link" data-account-section="orders"><span aria-hidden="true">▣</span>Orders<span class="account-nav-arrow" aria-hidden="true">›</span></button>
               <p class="account-sidebar-label"><span aria-hidden="true">♙</span>Account Settings</p>
               <button type="button" class="account-sidebar-link is-selected" data-account-section="profile">Profile Information</button>
               <button type="button" class="account-sidebar-link" data-account-section="addresses">Manage Addresses</button>
-              <button type="button" class="account-sidebar-link" data-account-menu-action="wishlist"><span aria-hidden="true">♡</span>Wishlist</button>
+              <button type="button" class="account-sidebar-link" data-account-section="wishlist"><span aria-hidden="true">♡</span>Wishlist</button>
               <button type="button" class="account-sidebar-link account-sidebar-signout" data-account-menu-action="signout"><span aria-hidden="true">↪</span>Sign Out</button>
             </nav>
           </aside>
@@ -379,8 +387,12 @@
                 <h3 id="account-address-form-heading">Add delivery address</h3>
                 <div class="account-address-fields">
                   <div class="account-address-field">
-                    <label for="account-address-label">Address label</label>
-                    <input id="account-address-label" name="label" maxlength="40" placeholder="Home, Work, etc." required>
+                    <label for="account-address-full-name">Full name</label>
+                    <input id="account-address-full-name" name="fullName" autocomplete="name" maxlength="100" placeholder="Enter your full name" required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-phone">Mobile Number <span>(optional)</span></label>
+                    <input id="account-address-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" pattern="[+0-9() -]{8,20}" placeholder="+91 98765 43210">
                   </div>
                   <div class="account-address-field">
                     <label for="account-address-line1">Address line 1</label>
@@ -401,10 +413,20 @@
                   <div class="account-address-field">
                     <label for="account-address-postal-code">PIN / postal code</label>
                     <input id="account-address-postal-code" name="postalCode" autocomplete="postal-code" maxlength="12" pattern="[A-Za-z0-9\- ]{3,12}" required>
+                    <small class="account-address-pin-status" id="account-address-pin-status" role="status" aria-live="polite"></small>
                   </div>
                   <div class="account-address-field">
                     <label for="account-address-country">Country</label>
                     <input id="account-address-country" name="country" autocomplete="country-name" maxlength="60" value="India" required>
+                  </div>
+                  <div class="account-address-field">
+                    <label for="account-address-label">Type of address</label>
+                    <select id="account-address-label" name="label" required>
+                      <option value="" disabled></option>
+                      <option value="Home">Home</option>
+                      <option value="Work">Work</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                 </div>
                 <label class="account-address-default">
@@ -416,6 +438,14 @@
                   <button class="account-profile-cancel" id="account-address-cancel" type="button">Cancel</button>
                 </div>
               </form>
+            </section>
+            <section class="account-profile-panel account-wishlist-panel" data-account-panel="wishlist" aria-labelledby="account-wishlist-heading" hidden>
+              <div class="account-profile-section-heading">
+                <h2 id="account-wishlist-heading">Wishlist</h2>
+              </div>
+              <p class="account-wishlist-status" id="account-wishlist-status" role="status" aria-live="polite"></p>
+              <p class="account-wishlist-empty" id="account-wishlist-empty" hidden>Your wishlist is empty. Add an item from your cart to save it here.</p>
+              <div class="account-wishlist-list" id="account-wishlist-list"></div>
             </section>
             <section class="account-profile-panel account-orders-panel" data-account-panel="orders" aria-labelledby="account-orders-heading" hidden>
               <div class="account-profile-section-heading">
@@ -482,6 +512,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="auth-config.js"></script>
   <script src="payment-config.js"></script>
+  <script src="account.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

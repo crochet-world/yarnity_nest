@@ -15,6 +15,8 @@ service cloud.firestore {
       function hasValidAddress() {
         return request.resource.data.keys().hasOnly([
             "label",
+            "fullName",
+            "phone",
             "addressLine1",
             "addressLine2",
             "city",
@@ -38,6 +40,14 @@ service cloud.firestore {
           request.resource.data.label is string &&
           request.resource.data.label.size() > 0 &&
           request.resource.data.label.size() <= 40 &&
+          (!("fullName" in request.resource.data) ||
+            (request.resource.data.fullName is string &&
+              request.resource.data.fullName.size() > 0 &&
+              request.resource.data.fullName.size() <= 100)) &&
+          (!("phone" in request.resource.data) ||
+            (request.resource.data.phone is string &&
+              request.resource.data.phone.size() <= 20 &&
+              request.resource.data.phone.matches('^[+0-9() -]{0,20}$'))) &&
           request.resource.data.addressLine1 is string &&
           request.resource.data.addressLine1.size() > 0 &&
           request.resource.data.addressLine1.size() <= 120 &&
@@ -61,6 +71,27 @@ service cloud.firestore {
       allow get: if isOwner();
       allow list: if request.auth != null && request.auth.uid == userId;
       allow create, update: if isOwner() && hasValidAddress();
+      allow delete: if isOwner();
+    }
+
+    match /users/{userId}/wishlist/{productId} {
+      function isOwner() {
+        return request.auth != null &&
+          request.auth.uid == userId &&
+          productId.matches('^[0-9]{1,2}$');
+      }
+
+      function hasValidWishlistItem() {
+        return request.resource.data.keys().hasOnly(["productIndex", "updatedAt"]) &&
+          request.resource.data.keys().hasAll(["productIndex", "updatedAt"]) &&
+          request.resource.data.productIndex is int &&
+          request.resource.data.productIndex >= 0 &&
+          request.resource.data.productIndex < 40 &&
+          request.resource.data.updatedAt == request.time;
+      }
+
+      allow get, list: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if isOwner() && hasValidWishlistItem();
       allow delete: if isOwner();
     }
   }

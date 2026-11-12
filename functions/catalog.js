@@ -9,11 +9,11 @@ const products = [
   ["Crochet bag 3", "Bags", 40000],
   ["Crochet bag 4", "Bags", 40000],
   ["Crochet bag 5", "Bags", 40000],
-  ["Bag charm / keychain 1", "Bag charms", 30000],
-  ["Bag charm / keychain 2", "Bag charms", 35000],
-  ["Bag charm / keychain 3", "Bag charms", 40000],
-  ["Bag charm / keychain 4", "Bag charms", 40000],
-  ["Bag charm / keychain 5", "Bag charms", 40000],
+  ["Bag charm / keychain 1", "Keychains & Bag Charms", 30000],
+  ["Bag charm / keychain 2", "Keychains & Bag Charms", 35000],
+  ["Bag charm / keychain 3", "Keychains & Bag Charms", 40000],
+  ["Bag charm / keychain 4", "Keychains & Bag Charms", 40000],
+  ["Bag charm / keychain 5", "Keychains & Bag Charms", 40000],
   ["Tea coaster 1", "Tea Coasters", 40000],
   ["Tea coaster 2", "Tea Coasters", 40000],
   ["Tea coaster 3", "Tea Coasters", 40000],
@@ -34,11 +34,11 @@ const products = [
   ["Plushies idea 3", "Plushies", 40000],
   ["Plushies idea 4", "Plushies", 40000],
   ["Plushies idea 5", "Plushies", 40000],
-  ["Keychains idea 1", "Keychains", 40000],
-  ["Keychains idea 2", "Keychains", 40000],
-  ["Keychains idea 3", "Keychains", 40000],
-  ["Keychains idea 4", "Keychains", 40000],
-  ["Keychains idea 5", "Keychains", 40000]
+  ["Keychains idea 1", "Keychains & Bag Charms", 40000],
+  ["Keychains idea 2", "Keychains & Bag Charms", 40000],
+  ["Keychains idea 3", "Keychains & Bag Charms", 40000],
+  ["Keychains idea 4", "Keychains & Bag Charms", 40000],
+  ["Keychains idea 5", "Keychains & Bag Charms", 40000]
 ];
 
 module.exports = products.map(function (product, productIndex) {
