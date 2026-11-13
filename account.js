@@ -5,6 +5,8 @@ let wishlistLoadedFor = "";
 let wishlistLoadPromises = new Map();
 let wishlistWritesInFlight = new Set();
 let wishlistWriteQueues = new Map();
+let wishlistCategoryFilter = "All";
+let wishlistSortOrder = "recent";
 let currentAuthUser = null;
 let authSetupMessage = "";
 let authStateResolved = false;
@@ -14,6 +16,7 @@ let accountOrdersLoadedFor = "";
 let accountOrdersLoading = false;
 let savedAccountAddresses = [];
 let addressLoadedFor = "";
+let addressCacheLoadedFor = "";
 let addressLoadingFor = "";
 let addressLoadPromise = null;
 let addressLoadSequence = 0;
@@ -24,9 +27,72 @@ let addressPinLookupSequence = 0;
 let phoneVerificationId = "";
 let phoneRecaptchaVerifier = null;
 let firebaseAuth = null;
+const ACCOUNT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+let accountIdleTimeoutId = null;
+let accountLastActivityAt = 0;
 
 function startAccountModule() {
   firebaseAuth = initializeFirebaseAuth();
+  ["pointerdown", "keydown", "mousemove", "scroll", "touchstart", "wheel"].forEach(function (eventName) {
+    document.addEventListener(eventName, recordAccountActivity, { passive: true });
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && currentAuthUser) {
+      scheduleAccountIdleSignOut();
+    }
+  });
+}
+
+function clearAccountIdleSignOut() {
+  if (accountIdleTimeoutId !== null) {
+    window.clearTimeout(accountIdleTimeoutId);
+    accountIdleTimeoutId = null;
+  }
+  accountLastActivityAt = 0;
+}
+
+function recordAccountActivity() {
+  if (!currentAuthUser) {
+    return;
+  }
+  accountLastActivityAt = Date.now();
+  scheduleAccountIdleSignOut();
+}
+
+function scheduleAccountIdleSignOut() {
+  if (!currentAuthUser) {
+    clearAccountIdleSignOut();
+    return;
+  }
+  if (!accountLastActivityAt) {
+    accountLastActivityAt = Date.now();
+  }
+  if (accountIdleTimeoutId !== null) {
+    window.clearTimeout(accountIdleTimeoutId);
+  }
+  const uid = currentAuthUser.uid;
+  const remainingMs = Math.max(
+    0,
+    ACCOUNT_IDLE_TIMEOUT_MS - (Date.now() - accountLastActivityAt)
+  );
+  accountIdleTimeoutId = window.setTimeout(function () {
+    accountIdleTimeoutId = null;
+    if (!currentAuthUser || currentAuthUser.uid !== uid) {
+      return;
+    }
+    const timeUntilSignOut = ACCOUNT_IDLE_TIMEOUT_MS - (Date.now() - accountLastActivityAt);
+    if (timeUntilSignOut > 0) {
+      scheduleAccountIdleSignOut();
+      return;
+    }
+    firebaseAuth.signOut().then(function () {
+      setAuthStatus("You were signed out after 5 minutes of inactivity.", false);
+    }).catch(function (error) {
+      console.error("Automatic sign-out after inactivity failed.", error);
+      setAuthStatus("Automatic sign-out failed. Check your connection and sign out manually.", true);
+      accountIdleTimeoutId = window.setTimeout(scheduleAccountIdleSignOut, 60 * 1000);
+    });
+  }, remainingMs);
 }
 
 function isFirebaseAuthConfigured() {
@@ -64,6 +130,12 @@ function initializeFirebaseAuth() {
     const handleAuthStateChanged = function (user) {
       currentAuthUser = user;
       authStateResolved = true;
+      if (user) {
+        accountLastActivityAt = Date.now();
+        scheduleAccountIdleSignOut();
+      } else {
+        clearAccountIdleSignOut();
+      }
       updateAccountPage();
     };
     const handleAuthError = function (error) {
@@ -74,24 +146,10 @@ function initializeFirebaseAuth() {
       setAuthStatus("We couldn’t check your sign-in status. Please refresh and try again.", true);
     };
 
-    const navigationEntry = performance.getEntriesByType("navigation")[0];
-    const pageReloaded = navigationEntry?.type === "reload";
     auth.setPersistence(window.firebase.auth.Auth.Persistence.LOCAL)
       .catch(function (error) {
         console.error("Firebase could not enable persistent sign-in.", error);
         authSetupMessage = "Your sign-in may not stay active after refreshing. Check your browser’s storage settings.";
-      })
-      .then(function () {
-        if (pageReloaded) {
-          window.history.replaceState(null, "", "#home");
-          return auth.signOut().catch(function (error) {
-            console.error("Could not sign out after refreshing the profile page.", error);
-            authStateResolved = true;
-            currentAuthUser = auth.currentUser;
-            updateAccountPage();
-            setAuthStatus("Could not sign out after refreshing your profile. Please try again.", true);
-          });
-        }
       })
       .then(function () {
         auth.onAuthStateChanged(handleAuthStateChanged, handleAuthError);
@@ -135,6 +193,7 @@ function updateAccountPage() {
   if (!currentAuthUser) {
     savedAccountAddresses = [];
     addressLoadedFor = "";
+    addressCacheLoadedFor = "";
     addressLoadSequence += 1;
     addressLoadingFor = "";
     addressEditingId = "";
@@ -177,8 +236,10 @@ function updateAccountPage() {
   const lastNameInput = document.getElementById("account-profile-last-name");
   const emailInput = document.getElementById("account-profile-email");
   const phoneInput = document.getElementById("account-profile-phone");
-  const sidebarName = document.getElementById("account-sidebar-name");
-  const avatar = document.getElementById("account-avatar");
+  const profileName = document.getElementById("account-profile-display-name");
+  const profileEmail = document.getElementById("account-profile-display-email");
+  const profileAvatarInitial = document.getElementById("account-profile-avatar-initial");
+  const profileAvatarImage = document.getElementById("account-profile-avatar-image");
   const heading = document.getElementById("account-page-heading");
   const intro = document.querySelector(".account-auth-intro");
   if (accountPage) {
@@ -216,11 +277,35 @@ function updateAccountPage() {
     if (phoneInput && !profileEditing) {
       phoneInput.value = currentAuthUser.phoneNumber || "";
     }
-    if (sidebarName) {
-      sidebarName.textContent = fullName;
+    if (profileName) {
+      profileName.textContent = fullName;
     }
-    if (avatar) {
-      avatar.textContent = fullName.charAt(0).toUpperCase();
+    if (profileEmail) {
+      profileEmail.textContent = currentAuthUser.email || "";
+    }
+    if (profileAvatarInitial) {
+      profileAvatarInitial.textContent = fullName.charAt(0).toUpperCase();
+    }
+    if (profileAvatarImage) {
+      const photoURL = currentAuthUser.photoURL || "";
+      if (profileAvatarImage.getAttribute("src") !== photoURL) {
+        if (photoURL) {
+          profileAvatarImage.setAttribute("src", photoURL);
+        } else {
+          profileAvatarImage.removeAttribute("src");
+        }
+      }
+      profileAvatarImage.hidden = !photoURL;
+      if (profileAvatarInitial) {
+        profileAvatarInitial.hidden = Boolean(photoURL);
+      }
+      profileAvatarImage.onerror = function () {
+        profileAvatarImage.hidden = true;
+        if (profileAvatarInitial) {
+          profileAvatarInitial.hidden = false;
+        }
+        console.error("Firebase profile picture could not be loaded.");
+      };
     }
     if (heading) {
       heading.textContent = `Hello${displayName ? `, ${displayName}` : ""}!`;
@@ -229,9 +314,11 @@ function updateAccountPage() {
       intro.textContent = "You’re signed in to your account.";
     }
     if (addressLoadedFor !== currentAuthUser.uid) {
-      savedAccountAddresses = [];
+      const cachedAddresses = readAccountAddressCache(currentAuthUser.uid);
+      savedAccountAddresses = cachedAddresses || [];
+      addressCacheLoadedFor = cachedAddresses ? currentAuthUser.uid : "";
       renderAccountAddresses();
-      loadAccountAddresses();
+      loadAccountAddresses(true);
     }
     if (wishlistLoadedFor !== currentAuthUser.uid) {
       if (wishlistLoadedFor && wishlistLoadedFor !== currentAuthUser.uid) {
@@ -308,31 +395,12 @@ function updateProfileChangeControls() {
 
 function setAccountSection(section) {
   currentAccountSection = section;
-  document.querySelector(".account-authenticated")?.classList.toggle(
-    "is-full-account-panel",
-    ["wishlist", "orders", "addresses"].includes(section)
-  );
-  document.querySelector(".account-sidebar-nav")?.toggleAttribute("hidden", section === "profile");
   document.querySelectorAll("[data-account-panel]").forEach(function (panel) {
     panel.hidden = panel.dataset.accountPanel !== section;
   });
-  document.querySelectorAll("[data-account-section]").forEach(function (button) {
-    const isSelected = button.dataset.accountSection === section;
-    button.classList.toggle("is-selected", isSelected);
-    if (button.dataset.accountSection === "orders") {
-      button.innerHTML = isSelected
-        ? '<span aria-hidden="true">▣</span>My Orders<span class="account-nav-arrow" aria-hidden="true">›</span>'
-        : '<span aria-hidden="true">▣</span>Orders<span class="account-nav-arrow" aria-hidden="true">›</span>';
-    }
-    if (isSelected) {
-      button.setAttribute("aria-current", "page");
-    } else {
-      button.removeAttribute("aria-current");
-    }
-  });
   if (section === "addresses") {
     if (currentAuthUser) {
-      loadAccountAddresses(true);
+      loadAccountAddresses();
     }
   }
   if (section === "orders" && currentAuthUser) {
@@ -756,6 +824,48 @@ function normalizeAddress(address) {
   };
 }
 
+function getAccountAddressCacheKey(uid) {
+  return `yarnity-nest-addresses:${uid}`;
+}
+
+function readAccountAddressCache(uid) {
+  try {
+    const stored = window.sessionStorage.getItem(getAccountAddressCacheKey(uid));
+    if (stored === null) {
+      return null;
+    }
+    const addresses = JSON.parse(stored);
+    if (!Array.isArray(addresses)) {
+      throw new Error("Saved address cache has an invalid format.");
+    }
+    return addresses.filter(function (address) {
+      return address && typeof address.id === "string" && address.id.length > 0;
+    }).map(function (address) {
+      return { id: address.id, ...normalizeAddress(address) };
+    }).sort(function (left, right) {
+      if (left.isDefault !== right.isDefault) {
+        return left.isDefault ? -1 : 1;
+      }
+      return left.label.localeCompare(right.label);
+    });
+  } catch (error) {
+    console.warn("Could not read the saved-address session cache.", error);
+    return null;
+  }
+}
+
+function persistAccountAddressCache(uid) {
+  try {
+    window.sessionStorage.setItem(
+      getAccountAddressCacheKey(uid),
+      JSON.stringify(savedAccountAddresses)
+    );
+    addressCacheLoadedFor = uid;
+  } catch (error) {
+    console.warn("Could not cache saved addresses for this browser session.", error);
+  }
+}
+
 function setAddressFormValues(form, address) {
   const values = address || {};
   ["label", "fullName", "phone", "addressLine1", "addressLine2", "city", "state", "postalCode", "country"]
@@ -869,7 +979,12 @@ function renderAccountAddresses() {
     card.append(header, details, actions);
     list.append(card);
   });
-  if (!savedAccountAddresses.length) {
+  if (
+    !savedAccountAddresses.length &&
+    currentAuthUser &&
+    addressLoadedFor === currentAuthUser.uid &&
+    addressLoadingFor !== currentAuthUser.uid
+  ) {
     const empty = document.createElement("p");
     empty.className = "account-address-empty";
     empty.textContent = "You haven’t saved any delivery addresses yet.";
@@ -910,11 +1025,11 @@ async function loadAccountAddresses(forceRefresh) {
   }
   if (addressLoadingFor === user.uid) {
     const activeLoad = addressLoadPromise;
-    if (!forceRefresh) {
-      return activeLoad;
-    }
     await activeLoad;
     if (currentAuthUser?.uid !== user.uid) {
+      return;
+    }
+    if (!forceRefresh || addressLoadedFor === user.uid) {
       return;
     }
     return loadAccountAddresses(true);
@@ -933,7 +1048,16 @@ async function loadAccountAddresses(forceRefresh) {
   }
   addressLoadingFor = user.uid;
   const sequence = ++addressLoadSequence;
-  setAddressStatus("Loading your saved addresses…", false);
+  if (addressLoadedFor !== user.uid && addressCacheLoadedFor === user.uid) {
+    setAddressStatus("Showing saved addresses while we refresh them…", false);
+  } else if (addressLoadedFor !== user.uid) {
+    setAddressStatus("Loading your saved addresses…", false);
+  } else {
+    setAddressStatus(
+      `${savedAccountAddresses.length} saved ${savedAccountAddresses.length === 1 ? "address" : "addresses"}.`,
+      false
+    );
+  }
   addressLoadPromise = (async function () {
     try {
       const collection = getAccountFirestore()
@@ -960,6 +1084,7 @@ async function loadAccountAddresses(forceRefresh) {
         return left.label.localeCompare(right.label);
       });
       addressLoadedFor = user.uid;
+      persistAccountAddressCache(user.uid);
       renderAccountAddresses();
       setAddressStatus(
         savedAccountAddresses.length
@@ -978,7 +1103,12 @@ async function loadAccountAddresses(forceRefresh) {
     } catch (error) {
       console.error("Could not load saved delivery address.", error);
       if (currentAuthUser?.uid === user.uid && sequence === addressLoadSequence) {
-        setAddressStatus(error.message || "Your saved address couldn’t be loaded.", true);
+        setAddressStatus(
+          addressCacheLoadedFor === user.uid
+            ? `Couldn’t refresh saved addresses. Showing the saved copy from this browser. ${error.message || ""}`.trim()
+            : error.message || "Your saved address couldn’t be loaded.",
+          true
+        );
       }
     } finally {
       if (addressLoadingFor === user.uid && sequence === addressLoadSequence) {
@@ -1076,6 +1206,7 @@ async function saveAccountAddress(event) {
       }
       return left.label.localeCompare(right.label);
     });
+    persistAccountAddressCache(user.uid);
     addressLoadSequence += 1;
     addressLoadingFor = "";
     addressLoadPromise = null;
@@ -1138,7 +1269,12 @@ async function saveAccountAddress(event) {
       setAddressEditor(previousAddress || null);
       setAddressFormValues(form, address);
       addressEditingId = previousEditingId;
-      setAddressStatus(error.message || "Your delivery address couldn’t be saved.", true);
+      setAddressStatus(
+        error.code === "permission-denied"
+          ? "Firebase denied this save. Deploy the latest Firestore rules to allow multiple saved addresses."
+          : error.message || "Your delivery address couldn’t be saved.",
+        true
+      );
     } else if (currentAuthUser?.uid === user.uid) {
       setAddressStatus("Address saved, but the address list could not be refreshed.", true);
     }
@@ -1326,7 +1462,7 @@ async function sendProfilePhoneCode() {
     if (!phoneRecaptchaVerifier) {
       phoneRecaptchaVerifier = new window.firebase.auth.RecaptchaVerifier(
         "account-phone-recaptcha",
-        { size: "normal" }
+        { size: "invisible" }
       );
       await phoneRecaptchaVerifier.render();
     }
@@ -1452,10 +1588,229 @@ function profileUpdateErrorMessage(error) {
     "auth/email-already-in-use": "That email address is already linked to another account.",
     "auth/invalid-email": "Enter a valid email address.",
     "auth/invalid-credential": "The current password is incorrect. Check it and try again.",
+    "auth/invalid-login-credentials": "The current password is incorrect. Check it and try again.",
+    "auth/wrong-password": "The current password is incorrect. Check it and try again.",
+    "auth/weak-password": "Choose a stronger password with at least 8 characters.",
+    "auth/configuration-not-found": "Email/Password sign-in isn’t enabled for this Firebase project. Enable it in Firebase Console under Authentication → Sign-in method.",
+    "auth/operation-not-allowed": "Email/Password sign-in isn’t enabled for this Firebase project. Enable it in Firebase Console under Authentication → Sign-in method.",
     "auth/requires-recent-login": "For security, sign out and sign in again before changing this account detail.",
     "auth/too-many-requests": "Too many attempts. Wait a little while, then try again."
   };
-  return messages[error.code] || "We couldn’t save your profile to Firebase. Check your connection and try again.";
+  return messages[error.code] || "We couldn’t update your account. Check your connection and try again.";
+}
+
+function profilePhotoErrorMessage(error) {
+  const messages = {
+    "storage/bucket-not-found": "The Firebase Storage bucket wasn’t found. Create/enable Storage for the yarnitynest project and verify storageBucket in auth-config.js.",
+    "storage/no-default-bucket": "No Storage bucket is configured. Set storageBucket in auth-config.js to the bucket shown in Firebase Console → Storage.",
+    "storage/project-not-found": "The Firebase project for Storage wasn’t found. Verify auth-config.js points to the correct project.",
+    "storage/object-not-found": "The uploaded profile picture could not be found. Please try again.",
+    "storage/unauthorized": "Firebase Storage rejected this upload. In the yarnitynest project, deploy the latest rules with: firebase deploy --only storage --project yarnitynest",
+    "storage/unauthenticated": "Your sign-in expired before the picture could be uploaded. Sign in again and retry.",
+    "storage/quota-exceeded": "This Firebase Storage bucket has exceeded its quota. Check the project’s Storage usage and billing.",
+    "storage/retry-limit-exceeded": "The upload couldn’t finish because the connection was interrupted. Check your connection and try again.",
+    "storage/unknown": "Firebase Storage couldn’t complete the upload. Check that Storage is enabled, the configured bucket is correct, and the latest Storage rules are deployed.",
+    "profile-photo/timeout": error.message
+  };
+  return messages[error.code] || `We couldn’t upload your profile picture (${error.code || "unknown Firebase error"}). Check Firebase Storage setup and try again.`;
+}
+
+async function optimizeAccountProfilePhoto(file) {
+  let imageBitmap;
+  try {
+    imageBitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error("This image couldn’t be opened. Try a different JPG, PNG, or WebP file.");
+  }
+  const maxDimension = 512;
+  const scale = Math.min(1, maxDimension / Math.max(imageBitmap.width, imageBitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(imageBitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(imageBitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    imageBitmap.close();
+    throw new Error("Your browser couldn’t prepare the profile picture. Try another image.");
+  }
+  context.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height);
+  imageBitmap.close();
+
+  const createBlob = function (type, quality) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Your browser couldn’t compress the profile picture. Try another image."));
+        }
+      }, type, quality);
+    });
+  };
+  let optimizedFile = await createBlob("image/webp", 0.8);
+  if (optimizedFile.type !== "image/webp") {
+    const jpegCanvas = document.createElement("canvas");
+    jpegCanvas.width = canvas.width;
+    jpegCanvas.height = canvas.height;
+    const jpegContext = jpegCanvas.getContext("2d");
+    if (!jpegContext) {
+      throw new Error("Your browser couldn’t prepare the profile picture. Try another image.");
+    }
+    jpegContext.fillStyle = "#ffffff";
+    jpegContext.fillRect(0, 0, jpegCanvas.width, jpegCanvas.height);
+    jpegContext.drawImage(canvas, 0, 0);
+    optimizedFile = await new Promise(function (resolve, reject) {
+      jpegCanvas.toBlob(function (blob) {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Your browser couldn’t compress the profile picture. Try another image."));
+        }
+      }, "image/jpeg", 0.82);
+    });
+  }
+  if (optimizedFile.size < file.size) {
+    return optimizedFile;
+  }
+  return file;
+}
+
+async function uploadAccountProfilePhoto(file) {
+  const status = document.getElementById("account-profile-photo-status");
+  const progressBar = document.getElementById("account-profile-photo-progress");
+  const progressFill = progressBar.querySelector("span");
+  const fileInput = document.getElementById("account-profile-photo-input");
+  const uploadButton = document.querySelector(".account-profile-photo-button");
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!file) {
+    return;
+  }
+  if (!allowedTypes.includes(file.type)) {
+    status.textContent = "Choose a JPG, PNG, or WebP image.";
+    status.classList.add("is-error");
+    fileInput.value = "";
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    status.textContent = "Choose an image smaller than 5 MB.";
+    status.classList.add("is-error");
+    fileInput.value = "";
+    return;
+  }
+  if (!currentAuthUser) {
+    status.textContent = "Sign in to upload a profile picture.";
+    status.classList.add("is-error");
+    fileInput.value = "";
+    return;
+  }
+  if (!window.firebase || typeof window.firebase.storage !== "function") {
+    status.textContent = "Firebase Storage SDK couldn’t load. Check your connection and refresh the page.";
+    status.classList.add("is-error");
+    fileInput.value = "";
+    return;
+  }
+
+  uploadButton.setAttribute("aria-disabled", "true");
+  fileInput.disabled = true;
+  uploadButton.textContent = "Preparing…";
+  status.textContent = "Optimizing your profile picture…";
+  status.classList.remove("is-error");
+  try {
+    const optimizedFile = await optimizeAccountProfilePhoto(file);
+    const uploadSize = (optimizedFile.size / 1024).toFixed(0);
+    uploadButton.textContent = "Uploading…";
+    progressBar.hidden = false;
+    progressBar.classList.add("is-indeterminate");
+    progressFill.style.width = "35%";
+    progressBar.removeAttribute("aria-valuenow");
+    progressBar.setAttribute("aria-valuetext", `Uploading ${uploadSize} kilobytes`);
+    status.textContent = `Connecting to Firebase Storage (${uploadSize} KB)…`;
+    const storage = window.firebase.storage();
+    const uploadingUid = currentAuthUser.uid;
+    const currentPhotoURL = currentAuthUser.photoURL || "";
+    const nextSlot = currentPhotoURL.includes("profile-picture-1") ? "2" : "1";
+    const photoRef = storage.ref()
+      .child(`users/${uploadingUid}/profile/profile-picture-${nextSlot}`);
+    const uploadTask = photoRef.put(optimizedFile, {
+      contentType: optimizedFile.type || file.type,
+      cacheControl: "private,max-age=3600"
+    });
+    const snapshot = await new Promise(function (resolve, reject) {
+      let settled = false;
+      let unsubscribe = function () {};
+      let waitingTimer = window.setTimeout(function () {
+        status.textContent = "Still connecting to Firebase Storage. Check that Storage is enabled and its rules are deployed.";
+      }, 10000);
+      let timeoutTimer = window.setTimeout(function () {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        unsubscribe();
+        uploadTask.cancel();
+        const error = new Error(
+          "Firebase Storage did not respond. Check your connection, confirm Storage is enabled for yarnitynest, and deploy its rules."
+        );
+        error.code = "profile-photo/timeout";
+        reject(error);
+      }, 45000);
+      const finish = function (callback, value) {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        window.clearTimeout(waitingTimer);
+        window.clearTimeout(timeoutTimer);
+        unsubscribe();
+        callback(value);
+      };
+      unsubscribe = uploadTask.on("state_changed", function (progress) {
+        window.clearTimeout(waitingTimer);
+        status.textContent = `Uploading optimized picture (${uploadSize} KB)…`;
+        const percentage = progress.totalBytes
+          ? Math.round((progress.bytesTransferred / progress.totalBytes) * 100)
+          : 0;
+        if (progress.bytesTransferred > 0) {
+          progressBar.classList.remove("is-indeterminate");
+          progressFill.style.width = `${percentage}%`;
+          progressBar.setAttribute("aria-valuenow", String(percentage));
+          progressBar.setAttribute("aria-valuetext", `${percentage}% uploaded`);
+          status.textContent = `Uploading optimized picture (${uploadSize} KB)… ${percentage}%`;
+        }
+      }, function (error) {
+        finish(reject, error);
+      }, function () {
+        progressBar.classList.remove("is-indeterminate");
+        progressFill.style.width = "100%";
+        progressBar.setAttribute("aria-valuenow", "100");
+        progressBar.setAttribute("aria-valuetext", "Upload complete");
+        status.textContent = "Saving your profile picture…";
+        finish(resolve, uploadTask.snapshot);
+      });
+    });
+    const photoURL = await snapshot.ref.getDownloadURL();
+    if (!currentAuthUser || currentAuthUser.uid !== uploadingUid) {
+      throw new Error("Your session changed during upload. Sign in again and retry.");
+    }
+    await currentAuthUser.updateProfile({ photoURL });
+    currentAuthUser = firebaseAuth.currentUser || currentAuthUser;
+    updateAccountPage();
+    status.textContent = "Your profile picture has been updated.";
+  } catch (error) {
+    console.error("Firebase profile picture upload failed.", error);
+    status.textContent = error.message && !error.code
+      ? error.message
+      : profilePhotoErrorMessage(error);
+    status.classList.add("is-error");
+  } finally {
+    uploadButton.removeAttribute("aria-disabled");
+    fileInput.disabled = false;
+    uploadButton.textContent = "Update photo";
+    fileInput.value = "";
+    progressBar.hidden = true;
+    progressBar.classList.remove("is-indeterminate");
+    progressFill.style.width = "0%";
+    progressBar.removeAttribute("aria-valuenow");
+  }
 }
 
 function completeAccountSignIn(user) {
@@ -1554,6 +1909,47 @@ async function submitAccountProfile(event) {
   }
 }
 
+async function submitAccountPasswordChange(event) {
+  event.preventDefault();
+  const form = event.target;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const status = document.getElementById("account-password-status");
+  const formData = new FormData(form);
+  const currentPassword = String(formData.get("currentPassword"));
+  const newPassword = String(formData.get("newPassword"));
+  const confirmPassword = String(formData.get("confirmPassword"));
+  if (!currentAuthUser || !form.reportValidity()) {
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    status.textContent = "The new passwords don’t match. Check them and try again.";
+    status.classList.add("is-error");
+    return;
+  }
+
+  submitButton.disabled = true;
+  status.textContent = "Updating your password…";
+  status.classList.remove("is-error");
+  try {
+    await reauthenticateForProfileChange(currentPassword);
+    await currentAuthUser.updatePassword(newPassword);
+    form.reset();
+    form.hidden = true;
+    const toggle = document.getElementById("account-password-toggle");
+    toggle.textContent = "Change password";
+    toggle.setAttribute("aria-expanded", "false");
+    status.textContent = "Your password has been updated.";
+  } catch (error) {
+    console.error("Firebase account password update failed.", error);
+    status.textContent = error.message && !error.code
+      ? error.message
+      : profileUpdateErrorMessage(error);
+    status.classList.add("is-error");
+  } finally {
+    submitButton.disabled = false;
+  }
+}
+
 async function submitAccountLogin(event) {
   event.preventDefault();
   const form = event.target;
@@ -1627,37 +2023,131 @@ async function submitAccountSignup(event) {
   }
 }
 
+function moveWishlistProductToCart(productIndex) {
+ const product = PRODUCTS[productIndex];
+ if (!product || !wishlistProductIndices.has(productIndex)) {
+   return false;
+ }
+ const cartItem = cartItems.find(function (item) {
+   return item.productIndex === productIndex;
+ });
+ if (cartItem && cartItem.quantity >= MAX_CART_ITEM_QUANTITY) {
+   return false;
+ }
+ if (cartItem) {
+   cartItem.quantity += 1;
+ } else {
+   cartItems.push({ productIndex: productIndex, quantity: 1 });
+ }
+ renderCart();
+ removeAccountWishlistProduct(productIndex);
+ return true;
+}
+
 function renderAccountWishlist() {
   const list = document.getElementById("account-wishlist-list");
   const empty = document.getElementById("account-wishlist-empty");
+  const summary = document.getElementById("account-wishlist-summary");
+  const filters = document.getElementById("account-wishlist-filters");
+  const sortSelect = document.getElementById("account-wishlist-sort");
+  const addAllButton = document.getElementById("account-wishlist-add-all");
   if (!list || !empty) {
     return;
   }
-  const products = Array.from(wishlistProductIndices)
-    .map(function (productIndex) {
-      return { productIndex: productIndex, product: PRODUCTS[productIndex] };
+  const productOrder = Array.from(wishlistProductIndices);
+  const products = productOrder
+    .map(function (productIndex, recentOrder) {
+      return {
+        productIndex: productIndex,
+        product: PRODUCTS[productIndex],
+        recentOrder: recentOrder
+      };
     })
     .filter(function (item) {
       return Boolean(item.product);
     });
+  const categories = ["All", ...new Set(products.map(function (item) {
+    return item.product.category;
+  }))];
+  if (!categories.includes(wishlistCategoryFilter)) {
+    wishlistCategoryFilter = "All";
+  }
+  if (filters) {
+    filters.replaceChildren();
+    categories.forEach(function (category) {
+      const filter = document.createElement("button");
+      filter.type = "button";
+      filter.className = `account-wishlist-filter${category === wishlistCategoryFilter ? " is-active" : ""}`;
+      filter.dataset.wishlistCategory = category;
+      filter.setAttribute("aria-pressed", String(category === wishlistCategoryFilter));
+      filter.textContent = category;
+      filters.append(filter);
+    });
+  }
+  if (sortSelect) {
+    sortSelect.value = wishlistSortOrder;
+  }
+  const total = products.reduce(function (sum, item) {
+    return sum + getPriceAmount(item.product);
+  }, 0);
+  if (summary) {
+    summary.textContent = `${products.length} saved ${products.length === 1 ? "piece" : "pieces"} · worth ${formatRupees(total)} together`;
+  }
+  if (addAllButton) {
+    addAllButton.disabled = products.length === 0;
+  }
+  const visibleProducts = products.filter(function (item) {
+    return wishlistCategoryFilter === "All" ||
+      item.product.category === wishlistCategoryFilter;
+  });
+  visibleProducts.sort(function (left, right) {
+    if (wishlistSortOrder === "price-low") {
+      return getPriceAmount(left.product) - getPriceAmount(right.product);
+    }
+    if (wishlistSortOrder === "price-high") {
+      return getPriceAmount(right.product) - getPriceAmount(left.product);
+    }
+    if (wishlistSortOrder === "name") {
+      return left.product.name.localeCompare(right.product.name);
+    }
+    return right.recentOrder - left.recentOrder;
+  });
   list.replaceChildren();
   empty.hidden = products.length > 0 || !currentAuthUser || wishlistLoadedFor !== currentAuthUser.uid;
-  products.forEach(function (item) {
+  if (products.length && !visibleProducts.length) {
+    const filteredEmpty = document.createElement("p");
+    filteredEmpty.className = "account-wishlist-filter-empty";
+    filteredEmpty.textContent = "No saved items in this category.";
+    list.append(filteredEmpty);
+  }
+  visibleProducts.forEach(function (item) {
     const card = document.createElement("article");
     card.className = "account-wishlist-item";
+    const art = document.createElement("div");
+    art.className = "account-wishlist-art";
+    art.style.setProperty("--wishlist-item-bg", item.product.bg || "#f1e5d8");
+    art.style.setProperty("--wishlist-item-accent", item.product.accent || "#a66e60");
     if (item.product.image) {
       const image = document.createElement("img");
       image.src = item.product.image;
       image.alt = item.product.name;
       image.loading = "lazy";
-      card.append(image);
+      art.append(image);
     } else {
       const placeholder = document.createElement("span");
       placeholder.className = "account-wishlist-placeholder";
       placeholder.setAttribute("aria-hidden", "true");
       placeholder.textContent = item.product.emoji || "✿";
-      card.append(placeholder);
+      art.append(placeholder);
     }
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "account-wishlist-remove";
+    remove.dataset.wishlistRemove = String(item.productIndex);
+    remove.setAttribute("aria-label", `Remove ${item.product.name} from wishlist`);
+    remove.textContent = "♥";
+    art.append(remove);
 
     const details = document.createElement("div");
     details.className = "account-wishlist-details";
@@ -1669,18 +2159,34 @@ function renderAccountWishlist() {
     price.textContent = item.product.price;
     details.append(category, name, price);
 
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "account-edit-button";
-    remove.dataset.wishlistRemove = String(item.productIndex);
-    remove.textContent = "Remove";
-    card.append(details, remove);
+    const moveToCart = document.createElement("button");
+    moveToCart.type = "button";
+    moveToCart.className = "button account-wishlist-move";
+    moveToCart.dataset.wishlistAddCart = String(item.productIndex);
+    moveToCart.textContent = "Move to cart";
+    card.append(art, details, moveToCart);
     list.append(card);
   });
 }
 
 document.addEventListener("click", function (event) {
   if (!(event.target instanceof Element)) {
+    return;
+  }
+
+  const passwordVisibilityButton = event.target.closest(".account-password-visibility");
+  if (passwordVisibilityButton) {
+    const passwordInput = document.getElementById(passwordVisibilityButton.getAttribute("aria-controls"));
+    if (passwordInput instanceof HTMLInputElement) {
+      const shouldShowPassword = passwordInput.type === "password";
+      passwordInput.type = shouldShowPassword ? "text" : "password";
+      passwordVisibilityButton.setAttribute("aria-pressed", String(shouldShowPassword));
+      passwordVisibilityButton.setAttribute(
+        "aria-label",
+        shouldShowPassword ? "Hide password" : "Show password"
+      );
+      passwordVisibilityButton.querySelector("span").textContent = shouldShowPassword ? "Hide" : "Show";
+    }
     return;
   }
 
@@ -1745,9 +2251,45 @@ document.addEventListener("click", function (event) {
     return;
   }
 
-  const accountSectionButton = event.target.closest("[data-account-section]");
-  if (accountSectionButton) {
-    setAccountSection(accountSectionButton.dataset.accountSection);
+  const wishlistFilterButton = event.target.closest("[data-wishlist-category]");
+  if (wishlistFilterButton) {
+    wishlistCategoryFilter = wishlistFilterButton.dataset.wishlistCategory;
+    renderAccountWishlist();
+    return;
+  }
+  const wishlistMoveButton = event.target.closest("[data-wishlist-add-cart]");
+  if (wishlistMoveButton) {
+    const productIndex = Number(wishlistMoveButton.dataset.wishlistAddCart);
+    if (!Number.isInteger(productIndex) || !PRODUCTS[productIndex]) {
+      console.error("Could not move an unknown product from the wishlist.");
+      return;
+    }
+    if (moveWishlistProductToCart(productIndex)) {
+      showCartToast(`${PRODUCTS[productIndex].name} moved to your cart.`);
+    } else {
+      setWishlistStatus("This item has reached the maximum cart quantity.", true);
+    }
+    return;
+  }
+  if (event.target.closest("#account-wishlist-add-all")) {
+    let movedCount = 0;
+    let skippedCount = 0;
+    Array.from(wishlistProductIndices).forEach(function (productIndex) {
+      if (moveWishlistProductToCart(productIndex)) {
+        movedCount += 1;
+      } else {
+        skippedCount += 1;
+      }
+    });
+    if (movedCount) {
+      showCartToast(`${movedCount} ${movedCount === 1 ? "item" : "items"} added to your cart.`);
+    }
+    if (skippedCount) {
+      setWishlistStatus(
+        `${skippedCount} item${skippedCount === 1 ? "" : "s"} could not be added because the cart quantity limit was reached.`,
+        true
+      );
+    }
     return;
   }
   const wishlistRemoveButton = event.target.closest("[data-wishlist-remove]");
@@ -1763,6 +2305,38 @@ document.addEventListener("click", function (event) {
   if (event.target.closest("#account-profile-edit")) {
     setProfileEditing(true);
     document.getElementById("account-profile-first-name")?.focus();
+    return;
+  }
+  if (event.target.closest("#account-password-toggle")) {
+    const form = document.getElementById("account-password-form");
+    const toggle = document.getElementById("account-password-toggle");
+    const isOpening = form.hidden;
+    form.hidden = !isOpening;
+    toggle.textContent = isOpening ? "Cancel password change" : "Change password";
+    toggle.setAttribute("aria-expanded", String(isOpening));
+    if (isOpening) {
+      const status = document.getElementById("account-password-status");
+      status.textContent = "";
+      status.classList.remove("is-error");
+      document.getElementById("account-password-current")?.focus();
+    } else {
+      form.reset();
+      const status = document.getElementById("account-password-status");
+      status.textContent = "";
+      status.classList.remove("is-error");
+    }
+    return;
+  }
+  if (event.target.closest("#account-password-cancel")) {
+    const form = document.getElementById("account-password-form");
+    const toggle = document.getElementById("account-password-toggle");
+    form.reset();
+    form.hidden = true;
+    toggle.textContent = "Change password";
+    toggle.setAttribute("aria-expanded", "false");
+    const status = document.getElementById("account-password-status");
+    status.textContent = "";
+    status.classList.remove("is-error");
     return;
   }
   if (event.target.closest("#account-profile-cancel")) {
@@ -1956,6 +2530,20 @@ document.addEventListener("input", function (event) {
     scheduleAddressPinLookup();
   }
 });
+document.addEventListener("change", function (event) {
+  if (
+    event.target instanceof HTMLInputElement &&
+    event.target.id === "account-profile-photo-input"
+  ) {
+    uploadAccountProfilePhoto(event.target.files?.[0]);
+  } else if (
+    event.target instanceof HTMLSelectElement &&
+    event.target.id === "account-wishlist-sort"
+  ) {
+    wishlistSortOrder = event.target.value;
+    renderAccountWishlist();
+  }
+});
 document.getElementById("account-dialog")?.addEventListener("cancel", function () {
   pendingCartReturn = null;
 });
@@ -1981,6 +2569,8 @@ document.addEventListener("submit", function (event) {
     submitAccountSignup(event);
   } else if (event.target.id === "account-profile-form") {
     submitAccountProfile(event);
+  } else if (event.target.id === "account-password-form") {
+    submitAccountPasswordChange(event);
   } else if (event.target.id === "account-address-form") {
     saveAccountAddress(event);
   }

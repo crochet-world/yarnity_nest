@@ -22,6 +22,8 @@ let imagePreviewScrollPosition = 0;
 let cartItems = [];
 let cartUserId = "";
 const CART_STORAGE_KEY = "yarnity-nest-cart";
+const MAX_CART_ITEM_QUANTITY = 10;
+const FREE_SHIPPING_THRESHOLD = 800;
 let cartToastTimer;
 let pendingConfirmation = null;
 let pendingCartReturn = null;
@@ -53,11 +55,14 @@ function loadCartItems(uid) {
       }
       const existing = itemsByProduct.get(item.productIndex);
       if (existing) {
-        existing.quantity += item.quantity;
+        existing.quantity = Math.min(
+          MAX_CART_ITEM_QUANTITY,
+          existing.quantity + item.quantity
+        );
       } else {
         itemsByProduct.set(item.productIndex, {
           productIndex: item.productIndex,
-          quantity: item.quantity
+          quantity: Math.min(MAX_CART_ITEM_QUANTITY, item.quantity)
         });
       }
     });
@@ -603,12 +608,32 @@ function renderCart() {
   const countElement = document.getElementById("cart-count");
   const cartButton = document.getElementById("cart-open");
   const itemsContainer = document.getElementById("cart-items");
+  const subtotalElement = document.getElementById("cart-subtotal");
   const totalElement = document.getElementById("cart-total");
+  const shippingMessage = document.getElementById("cart-shipping-message");
+  const shippingTrack = document.getElementById("cart-shipping-track");
+  const shippingProgress = document.getElementById("cart-shipping-progress-bar");
   const proceedButton = document.getElementById("cart-proceed-payment");
   const paymentButton = document.getElementById("razorpay-checkout-button");
-
+  if (subtotalElement) {
+    subtotalElement.textContent = formatRupees(cartTotal);
+  }
   if (totalElement) {
     totalElement.textContent = formatRupees(cartTotal);
+  }
+  if (shippingMessage) {
+    shippingMessage.textContent = cartTotal >= FREE_SHIPPING_THRESHOLD
+      ? "You’ve unlocked free shipping!"
+      : `Add ${formatRupees(FREE_SHIPPING_THRESHOLD - cartTotal)} more for free shipping.`;
+  }
+  if (shippingProgress) {
+    shippingProgress.style.width = `${Math.min(100, (cartTotal / FREE_SHIPPING_THRESHOLD) * 100)}%`;
+  }
+  if (shippingTrack) {
+    shippingTrack.setAttribute(
+      "aria-valuenow",
+      String(Math.min(FREE_SHIPPING_THRESHOLD, cartTotal))
+    );
   }
   updatePaymentPage(cartTotal);
   if (countElement) {
@@ -642,19 +667,30 @@ function renderCart() {
     const isSavingWishlist = Boolean(
       user && wishlistWritesInFlight.has(wishlistOperationKey(user, item.productIndex))
     );
+    const itemImage = product.image
+      ? `<img src="${product.image}" alt="">`
+      : `<span aria-hidden="true">${product.emoji || "✿"}</span>`;
     return `
       <article class="cart-item">
+        <div class="cart-item-art" style="--cart-item-bg:${product.bg || "#f1e5d8"};--cart-item-accent:${product.accent || "#a66e60"}">${itemImage}</div>
         <div class="cart-item-info">
           <h3>${product.name}</h3>
-          <p class="cart-item-meta">${product.category} · Quantity: ${item.quantity}</p>
-          <p class="cart-unit-price">Unit price: <strong>${product.price}</strong></p>
+          <p class="cart-item-meta">${product.category}</p>
+          <p class="cart-unit-price">${formatRupees(getPriceAmount(product))} each</p>
+          <div class="cart-item-controls">
+            <div class="cart-quantity" aria-label="Quantity for ${product.name}">
+              <button type="button" data-cart-quantity="decrease" data-product-index="${item.productIndex}" aria-label="Decrease quantity of ${product.name}"${item.quantity <= 1 ? " disabled" : ""}>−</button>
+              <span>${item.quantity}</span>
+              <button type="button" data-cart-quantity="increase" data-product-index="${item.productIndex}" aria-label="Increase quantity of ${product.name}"${item.quantity >= MAX_CART_ITEM_QUANTITY ? " disabled" : ""}>+</button>
+            </div>
+          </div>
         </div>
         <div class="cart-item-side">
           <strong class="cart-item-total">${formatRupees(
             getPriceAmount(product) * item.quantity
           )}</strong>
           <div class="cart-item-actions">
-            <button class="cart-wishlist${isInWishlist ? " is-saved" : ""}" type="button" data-cart-wishlist="${item.productIndex}" aria-pressed="${isInWishlist}"${isSavingWishlist ? " disabled" : ""}>${isInWishlist ? "Added to Wishlist" : "Add to Wishlist"}</button>
+            <button class="cart-wishlist${isInWishlist ? " is-saved" : ""}" type="button" data-cart-wishlist="${item.productIndex}" aria-pressed="${isInWishlist}"${isSavingWishlist ? " disabled" : ""}>${isInWishlist ? "Saved for later" : "Save for later"}</button>
             <button class="cart-remove" type="button" data-cart-remove="${item.productIndex}">Remove</button>
           </div>
         </div>
@@ -1143,7 +1179,7 @@ document.querySelectorAll(".favorite-toggle").forEach(function (button) {
   });
 });
 
-const appRoutes = ["home", "shop", "about", "order", "payment", "confirmation", "account"];
+const appRoutes = ["home", "shop", "about", "payment", "confirmation", "account"];
 let currentRoute = "";
 let currentSelectedCategory = "Flowers";
 
@@ -1311,6 +1347,37 @@ window.addEventListener("hashchange", renderRoute);
 document.addEventListener("submit", function (event) {
   if (event.target instanceof HTMLFormElement && event.target.id === "checkout-contact-form") {
     startRazorpayCheckout(event);
+  } else if (event.target instanceof HTMLFormElement && event.target.id === "customize-product-form") {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const productType = String(formData.get("productType") || "").trim();
+    const design = String(formData.get("design") || "").trim();
+    const color = String(formData.get("color") || "").trim();
+    const status = document.getElementById("customize-status");
+    const fallbackLink = document.getElementById("customize-whatsapp-fallback");
+    const message = [
+      `Hi ${STORE.brandName}! I'd like to customize a product.`,
+      `Product type: ${productType}`,
+      `Design: ${design}`,
+      `Preferred color: ${color}`
+    ].join("\n");
+    const url = whatsappUrl(message, STORE.orderWhatsappNumber);
+    if (!url) {
+      if (status) {
+        status.textContent = "WhatsApp isn’t configured. Please contact the shop directly.";
+        status.classList.add("is-error");
+      }
+      return;
+    }
+    if (fallbackLink) {
+      fallbackLink.href = url;
+      fallbackLink.hidden = false;
+    }
+    if (status) {
+      status.textContent = "Your request is ready. If WhatsApp doesn’t open, use the link below.";
+      status.classList.remove("is-error");
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 });
 
@@ -1342,12 +1409,40 @@ document.addEventListener("click", function (event) {
       return item.productIndex === productIndex;
     });
     if (cartItem) {
+      if (cartItem.quantity >= MAX_CART_ITEM_QUANTITY) {
+        showCartToast(`You can add up to ${MAX_CART_ITEM_QUANTITY} of this item.`);
+        return;
+      }
       cartItem.quantity += 1;
     } else {
       cartItems.push({ productIndex: productIndex, quantity: 1 });
     }
     renderCart();
     showCartToast(`${PRODUCTS[productIndex].name} added to cart.`);
+    return;
+  }
+
+  const quantityButton = event.target.closest("[data-cart-quantity]");
+  if (quantityButton) {
+    const productIndex = Number(quantityButton.dataset.productIndex);
+    const cartItem = cartItems.find(function (item) {
+      return item.productIndex === productIndex;
+    });
+    if (!cartItem) {
+      return;
+    }
+    if (quantityButton.dataset.cartQuantity === "increase") {
+      cartItem.quantity = Math.min(
+        MAX_CART_ITEM_QUANTITY,
+        cartItem.quantity + 1
+      );
+    } else if (quantityButton.dataset.cartQuantity === "decrease") {
+      cartItem.quantity = Math.max(1, cartItem.quantity - 1);
+    } else {
+      console.error("Could not update cart quantity: unknown action.");
+      return;
+    }
+    renderCart();
     return;
   }
 
@@ -1382,23 +1477,6 @@ document.addEventListener("click", function (event) {
     return;
   }
 
-  const link = event.target.closest(".order-start-link, .order-how-it-works");
-  if (!link) {
-    return;
-  }
-
-  event.preventDefault();
-  if (currentRoute !== "order") {
-    window.history.pushState(null, "", "#order");
-    renderRoute();
-  }
-  const targetId = link.classList.contains("order-how-it-works")
-    ? "how-it-works"
-    : "start-an-order";
-  document.getElementById(targetId)?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
 });
 
 // Start the storefront.

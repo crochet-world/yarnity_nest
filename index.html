@@ -21,7 +21,6 @@
       <a class="is-active" href="#home" data-route-link="home" aria-current="page">Home</a>
       <a href="#shop" data-route-link="shop">Shop</a>
       <a href="#about" data-route-link="about">Our story</a>
-      <a href="#order" data-route-link="order">Order</a>
     </nav>
     <div class="header-actions">
       <button class="header-cart" id="cart-open" type="button" aria-label="Open cart, 0 items">
@@ -64,7 +63,7 @@
         <h1>Little things,<br><em>made with love.</em></h1>
         <p class="hero-description">At yarnity_nest, every piece begins with yarn, patience and a little imagination. From cheerful crochet blooms to tiny gifts and cozy home accents, each creation is made stitch by stitch.</p>
         <p class="hero-thank-you">Thank you for supporting handmade and helping small creative businesses grow.</p>
-        <div class="hero-actions"><a class="button hero-primary" href="#shop" data-route-link="shop">Explore the collection <span>↓</span></a><a class="button hero-secondary" href="#order" data-route-link="order">How to order</a></div>
+        <div class="hero-actions"><a class="button hero-primary" href="#shop" data-route-link="shop">Explore the collection <span>↓</span></a></div>
         <div class="hero-note"><span class="dot"></span> Made slowly. Loved forever.</div>
       </div>
       <div class="hero-art" aria-label="Decorative crochet-inspired shapes">
@@ -117,6 +116,34 @@
       <div class="new-arrivals-grid" id="new-arrivals-grid"></div>
     </section>
 
+    <section class="customize-section section" data-route-view="home" aria-labelledby="customize-heading">
+      <div class="customize-copy">
+        <p class="eyebrow">MADE JUST FOR YOU</p>
+        <h2 id="customize-heading">Customize your product</h2>
+        <p>Have an idea in mind? Tell us what you'd love, and send your request directly to us on WhatsApp.</p>
+      </div>
+      <form class="customize-form" id="customize-product-form">
+        <label for="customize-product-type">Product type</label>
+        <select id="customize-product-type" name="productType" required>
+          <option value="" selected disabled>Choose a product type</option>
+          <option>Flowers</option>
+          <option>Gifts</option>
+          <option>Bags</option>
+          <option>Keychains &amp; Bag Charms</option>
+          <option>Tea Coasters</option>
+          <option>Hair Accessories</option>
+          <option>Other</option>
+        </select>
+        <label for="customize-design">Design</label>
+        <input id="customize-design" name="design" maxlength="160" placeholder="Describe the design you have in mind" required>
+        <label for="customize-color">Color</label>
+        <input id="customize-color" name="color" maxlength="100" placeholder="Your preferred color or color combination" required>
+        <button class="button customize-submit" type="submit">Send customization request</button>
+        <p class="customize-status" id="customize-status" role="status" aria-live="polite"></p>
+        <a class="customize-fallback" id="customize-whatsapp-fallback" target="_blank" rel="noopener noreferrer" hidden>Open WhatsApp to send your request</a>
+      </form>
+    </section>
+
     <section class="shop section" id="shop" data-route-view="shop">
       <div class="section-heading shop-heading"><h2>Shop by category</h2><p class="section-intro">Browse the collection and find a handmade favourite.</p></div>
       <div id="category-grid" class="category-grid" aria-label="Shop by category"></div>
@@ -139,68 +166,7 @@
     <section class="story-order-cta" data-route-view="about">
       <p class="eyebrow">HAVE SOMETHING SPECIAL IN MIND?</p>
       <h2>Let's make a little something for you.</h2>
-      <a class="button" href="#order" data-route-link="order">Start an order <span aria-hidden="true">→</span></a>
-    </section>
-
-    <section class="order-page" id="order" data-route-view="order">
-      <section class="order-intro">
-        <div class="order-copy">
-          <p class="eyebrow">MADE JUST FOR YOU</p>
-          <h1>Let's make something <em>lovely.</em></h1>
-          <p>Every piece is made to order in small batches. Tell us what caught your eye, your preferred colours and your delivery city.</p>
-          <div class="order-actions">
-            <a class="button order-start-link" href="#order">Start your order <span aria-hidden="true">→</span></a>
-            <a class="button order-how-it-works" href="#how-it-works">How it works</a>
-          </div>
-        </div>
-        <div class="order-hero-art hero-art" aria-hidden="true">
-          <div class="sun"></div><div class="art-card art-card-one"><span>✿</span><small>made by hand</small></div>
-          <div class="art-card art-card-two"><span>♡</span><small>made for you</small></div>
-          <div class="thread thread-one"></div><div class="thread thread-two"></div>
-          <div class="hero-caption">A little handmade<br>happiness.</div>
-        </div>
-      </section>
-
-      <section class="order-process">
-        <div class="order-process-heading">
-          <p class="eyebrow">A LITTLE LESS PROCESS</p>
-          <h2>Ordering should feel easy.</h2>
-          <p>No complicated checkout. Just a friendly conversation so we can make the right thing for you.</p>
-        </div>
-        <div class="order-steps" id="how-it-works">
-          <article><span>01</span><h3>Choose</h3><p>Pick a piece from the collection or tell us what you have in mind.</p></article>
-          <article><span>02</span><h3>Personalise</h3><p>Share your colour preferences and any little details you'd like.</p></article>
-          <article><span>03</span><h3>We'll make it</h3><p>We'll confirm availability, delivery and payment before we begin.</p></article>
-        </div>
-        <div class="order-details">
-          <div class="order-contact-card" id="start-an-order">
-            <p class="eyebrow">SAY WHEN YOU ARE</p>
-            <h3>Let's create your little something.</h3>
-            <p>Message us with what you like and we'll help you with colours, availability and delivery.</p>
-            <div class="order-actions">
-              <a class="button order-instagram" href="https://www.instagram.com/yarnity_nest/" target="_blank" rel="noreferrer">Message on Instagram</a>
-              <a class="button order-whatsapp order-whatsapp-contact" href="#">Message on WhatsApp</a>
-            </div>
-          </div>
-          <div class="order-promise-card">
-            <article><span>✿</span><div><h3>Made to order</h3><p>We make each piece with care, just for you.</p></div></article>
-            <article><span>♡</span><div><h3>Custom colours</h3><p>Ask us about colours and small custom details.</p></div></article>
-            <article><span>✉</span><div><h3>Friendly help</h3><p>We'll guide you through availability and delivery.</p></div></article>
-            <article><span>→</span><div><h3>Delivery</h3><p>We'll confirm delivery options for your location.</p></div></article>
-          </div>
-        </div>
-        <p class="order-note">✳ Thoughtfully handmade · Little things, thoughtfully made</p>
-      </section>
-
-      <section class="order-faq">
-        <p class="eyebrow">A FEW LITTLE ANSWERS</p>
-        <h2>Frequently asked questions.</h2>
-        <div class="order-faq-list">
-          <details><summary>How long does an order take?</summary><p>Timing depends on the piece. Message us and we'll confirm an estimate before you order.</p></details>
-          <details><summary>Can I request a different colour?</summary><p>Yes, custom colours may be available. Tell us what you have in mind when you message.</p></details>
-          <details><summary>Can I order something custom?</summary><p>We love hearing your ideas. Send us a message and we'll let you know what we can make.</p></details>
-        </div>
-      </section>
+      <a class="button" href="#shop" data-route-link="shop">Browse the collection <span aria-hidden="true">→</span></a>
     </section>
 
     <section class="payment-page section" data-route-view="payment">
@@ -303,7 +269,16 @@
             <label for="account-login-email">Email address</label>
             <input id="account-login-email" name="email" type="email" autocomplete="email" maxlength="254" required>
             <label for="account-login-password">Password</label>
-            <input id="account-login-password" name="password" type="password" autocomplete="current-password" required>
+            <div class="account-auth-password-field">
+              <input id="account-login-password" name="password" type="password" autocomplete="current-password" required>
+              <button class="account-password-visibility" type="button" aria-label="Show password" aria-controls="account-login-password" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Show</span>
+              </button>
+            </div>
             <button class="button account-auth-submit" type="submit">Log In</button>
             <p class="account-auth-switch">First time here? <button type="button" data-auth-mode="signup">Create an account</button></p>
           </form>
@@ -322,59 +297,103 @@
         </div>
         <p class="account-auth-status" id="account-auth-status" role="status" aria-live="polite"></p>
         <div class="account-authenticated" id="account-authenticated" hidden>
-          <aside class="account-sidebar">
-            <div class="account-greeting">
-              <span class="account-avatar" id="account-avatar" aria-hidden="true">Y</span>
-              <span>Hello,<strong id="account-sidebar-name"></strong></span>
-            </div>
-            <nav class="account-sidebar-nav" aria-label="Profile sections">
-              <button type="button" class="account-sidebar-link" data-account-section="orders"><span aria-hidden="true">▣</span>Orders<span class="account-nav-arrow" aria-hidden="true">›</span></button>
-              <p class="account-sidebar-label"><span aria-hidden="true">♙</span>Account Settings</p>
-              <button type="button" class="account-sidebar-link is-selected" data-account-section="profile">Profile Information</button>
-              <button type="button" class="account-sidebar-link" data-account-section="addresses">Manage Addresses</button>
-              <button type="button" class="account-sidebar-link" data-account-section="wishlist"><span aria-hidden="true">♡</span>Wishlist</button>
-              <button type="button" class="account-sidebar-link account-sidebar-signout" data-account-menu-action="signout"><span aria-hidden="true">↪</span>Sign Out</button>
-            </nav>
-          </aside>
           <div class="account-profile-content">
             <section class="account-profile-panel" data-account-panel="profile" aria-labelledby="account-profile-heading">
-              <div class="account-profile-section-heading">
-                <h2 id="account-profile-heading">Personal Information</h2>
-                <button class="account-edit-button" id="account-profile-edit" type="button">Edit</button>
+              <div class="account-profile-identity">
+                <span class="account-profile-avatar" aria-hidden="true">
+                  <span id="account-profile-avatar-initial">Y</span>
+                  <img id="account-profile-avatar-image" alt="" hidden>
+                </span>
+                <div class="account-profile-identity-copy">
+                  <strong id="account-profile-display-name"></strong>
+                  <span id="account-profile-display-email"></span>
+                </div>
+                <div class="account-profile-photo-control">
+                  <label class="account-profile-photo-button" for="account-profile-photo-input">Update photo</label>
+                  <input class="visually-hidden" id="account-profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="account-profile-photo-help">
+                  <span class="account-profile-photo-help" id="account-profile-photo-help">JPG, PNG or WebP, up to 5 MB</span>
+                </div>
               </div>
-              <form id="account-profile-form" class="account-profile-form">
-                <div class="account-name-fields">
-                  <label class="visually-hidden" for="account-profile-first-name">First name</label>
-                  <input id="account-profile-first-name" name="firstName" autocomplete="given-name" maxlength="50" placeholder="First name" readonly required>
-                  <label class="visually-hidden" for="account-profile-last-name">Last name</label>
-                  <input id="account-profile-last-name" name="lastName" autocomplete="family-name" maxlength="50" placeholder="Last name" readonly>
-                </div>
-                <div class="account-profile-readonly account-profile-contact-field">
-                  <label for="account-profile-email">Email Address</label>
-                  <input id="account-profile-email" name="email" type="email" autocomplete="email" maxlength="254" readonly required>
-                </div>
-                <div class="account-profile-readonly account-profile-contact-field">
-                  <label for="account-profile-phone">Mobile Number</label>
-                  <input id="account-profile-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="Add your mobile number" readonly>
-                </div>
-                <div class="account-profile-reauth" id="account-profile-reauth" hidden>
-                  <label for="account-profile-password">Current password for email or mobile changes</label>
-                  <input id="account-profile-password" name="currentPassword" type="password" autocomplete="current-password">
-                </div>
-                <div class="account-profile-actions" id="account-profile-actions" hidden>
-                  <button class="button account-profile-save" type="submit">Save</button>
-                  <button class="account-profile-cancel" id="account-profile-cancel" type="button">Cancel</button>
-                </div>
-                <p class="account-profile-status" id="account-profile-status" role="status" aria-live="polite"></p>
-              </form>
-              <div class="account-phone-verification" id="account-phone-verification" hidden>
-                <div id="account-phone-recaptcha"></div>
-                <button class="account-edit-button" id="account-phone-send-code" type="button">Send verification code</button>
-                <label for="account-phone-code">SMS verification code</label>
-                <input id="account-phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter code" hidden>
-                <button class="button account-profile-save" id="account-phone-confirm" type="button" hidden>Verify and update number</button>
+              <p class="account-profile-photo-status" id="account-profile-photo-status" role="status" aria-live="polite"></p>
+              <div class="account-profile-photo-progress" id="account-profile-photo-progress" role="progressbar" aria-label="Profile picture upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Uploading" hidden>
+                <span></span>
               </div>
-              <p class="account-profile-hint" id="account-profile-hint" hidden>Email and mobile number are used for your Firebase account. Changing either requires your current password; mobile changes are confirmed by SMS.</p>
+              <section class="account-profile-card" aria-labelledby="account-profile-heading">
+                <div class="account-profile-section-heading">
+                  <div class="account-profile-heading-copy">
+                    <h2 id="account-profile-heading">Personal Information</h2>
+                    <p>Keep your personal details up to date.</p>
+                  </div>
+                  <button class="account-edit-button" id="account-profile-edit" type="button">Edit details</button>
+                </div>
+                <div class="account-profile-fields">
+                  <form id="account-profile-form" class="account-profile-form">
+                    <div class="account-name-fields">
+                      <div class="account-profile-name-field">
+                        <label for="account-profile-first-name">First Name</label>
+                        <input id="account-profile-first-name" name="firstName" autocomplete="given-name" maxlength="50" readonly required>
+                      </div>
+                      <div class="account-profile-name-field">
+                        <label for="account-profile-last-name">Last Name</label>
+                        <input id="account-profile-last-name" name="lastName" autocomplete="family-name" maxlength="50" readonly>
+                      </div>
+                    </div>
+                    <div class="account-profile-contact-field">
+                      <label for="account-profile-email">Email Address</label>
+                      <input id="account-profile-email" name="email" type="email" autocomplete="email" maxlength="254" readonly required>
+                    </div>
+                    <div class="account-profile-contact-field">
+                      <label for="account-profile-phone">Mobile Number</label>
+                      <input id="account-profile-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="Add your mobile number" readonly>
+                    </div>
+                    <div class="account-profile-reauth" id="account-profile-reauth" hidden>
+                      <label for="account-profile-password">Current password for email or mobile changes</label>
+                      <input id="account-profile-password" name="currentPassword" type="password" autocomplete="current-password">
+                    </div>
+                    <div class="account-profile-actions" id="account-profile-actions" hidden>
+                      <button class="button account-profile-save" type="submit">Save changes</button>
+                      <button class="account-profile-cancel" id="account-profile-cancel" type="button">Cancel</button>
+                    </div>
+                    <p class="account-profile-status" id="account-profile-status" role="status" aria-live="polite"></p>
+                  </form>
+                  <div class="account-phone-verification" id="account-phone-verification" hidden>
+                    <div id="account-phone-recaptcha"></div>
+                    <button class="account-edit-button" id="account-phone-send-code" type="button">Send verification code</button>
+                    <label for="account-phone-code">SMS verification code</label>
+                    <input id="account-phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter code" hidden>
+                    <button class="button account-profile-save" id="account-phone-confirm" type="button" hidden>Verify and update number</button>
+                  </div>
+                  <p class="account-profile-hint" id="account-profile-hint" hidden>Email and mobile number are used for your Firebase account. Changing either requires your current password; mobile changes are confirmed by SMS.</p>
+                </div>
+              </section>
+              <section class="account-profile-card account-password-card" aria-labelledby="account-password-heading">
+                <div class="account-password-card-heading">
+                  <div class="account-profile-heading-copy">
+                    <h2 id="account-password-heading">Password</h2>
+                    <p>Change your password to keep your account secure.</p>
+                  </div>
+                  <button class="account-edit-button" id="account-password-toggle" type="button" aria-expanded="false" aria-controls="account-password-form">Change password</button>
+                </div>
+                <form id="account-password-form" class="account-password-form" hidden>
+                  <label for="account-password-current">Current password</label>
+                  <input id="account-password-current" name="currentPassword" type="password" autocomplete="current-password" required>
+                  <div class="account-password-new-fields">
+                    <div>
+                      <label for="account-password-new">New password</label>
+                      <input id="account-password-new" name="newPassword" type="password" autocomplete="new-password" minlength="8" required>
+                    </div>
+                    <div>
+                      <label for="account-password-confirm">Confirm new password</label>
+                      <input id="account-password-confirm" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+                    </div>
+                  </div>
+                  <div class="account-profile-actions">
+                    <button class="button account-profile-save" type="submit">Save password</button>
+                    <button class="account-profile-cancel" id="account-password-cancel" type="button">Cancel</button>
+                  </div>
+                </form>
+                <p class="account-profile-status" id="account-password-status" role="status" aria-live="polite"></p>
+              </section>
             </section>
             <section class="account-profile-panel account-addresses-panel" data-account-panel="addresses" aria-labelledby="account-addresses-heading" hidden>
               <div class="account-profile-section-heading">
@@ -383,7 +402,7 @@
               </div>
               <p class="account-address-status" id="account-addresses-status" role="status" aria-live="polite"></p>
               <div class="account-address-list" id="account-address-list"></div>
-              <form class="account-address-form" id="account-address-form" hidden>
+              <form class="account-address-form" id="account-address-form" novalidate hidden>
                 <h3 id="account-address-form-heading">Add delivery address</h3>
                 <div class="account-address-fields">
                   <div class="account-address-field">
@@ -440,8 +459,24 @@
               </form>
             </section>
             <section class="account-profile-panel account-wishlist-panel" data-account-panel="wishlist" aria-labelledby="account-wishlist-heading" hidden>
-              <div class="account-profile-section-heading">
-                <h2 id="account-wishlist-heading">Wishlist</h2>
+              <div class="account-wishlist-header">
+                <div>
+                  <h2 id="account-wishlist-heading">Your wishlist</h2>
+                  <p class="account-wishlist-summary" id="account-wishlist-summary">Your saved pieces will appear here.</p>
+                </div>
+                <div class="account-wishlist-header-actions">
+                  <button class="button account-wishlist-add-all" id="account-wishlist-add-all" type="button">Add all to cart</button>
+                </div>
+              </div>
+              <div class="account-wishlist-toolbar">
+                <div class="account-wishlist-filters" id="account-wishlist-filters" aria-label="Filter wishlist"></div>
+                <label class="visually-hidden" for="account-wishlist-sort">Sort wishlist</label>
+                <select class="account-wishlist-sort" id="account-wishlist-sort">
+                  <option value="recent">Recently added</option>
+                  <option value="price-low">Price: low to high</option>
+                  <option value="price-high">Price: high to low</option>
+                  <option value="name">Name</option>
+                </select>
               </div>
               <p class="account-wishlist-status" id="account-wishlist-status" role="status" aria-live="polite"></p>
               <p class="account-wishlist-empty" id="account-wishlist-empty" hidden>Your wishlist is empty. Add an item from your cart to save it here.</p>
@@ -483,17 +518,35 @@
   </dialog>
 
   <dialog class="cart-dialog" id="cart-dialog" aria-labelledby="cart-title">
-    <div class="cart-dialog-header">
-      <h2 id="cart-title">Your cart</h2>
-      <button class="cart-close" id="cart-close" type="button" aria-label="Close cart">&times;</button>
+    <div class="cart-dialog-main">
+      <div class="cart-dialog-header">
+        <h2 id="cart-title">Your cart</h2>
+        <button class="cart-close" id="cart-close" type="button" aria-label="Close cart">&times;</button>
+      </div>
+      <div class="cart-shipping-progress" aria-live="polite">
+        <p id="cart-shipping-message"></p>
+        <div class="cart-shipping-track" id="cart-shipping-track" role="progressbar" aria-label="Progress toward free shipping" aria-valuemin="0" aria-valuemax="800" aria-valuenow="0">
+          <span id="cart-shipping-progress-bar"></span>
+        </div>
+      </div>
+      <div class="cart-items" id="cart-items"></div>
     </div>
-    <div class="cart-items" id="cart-items"></div>
-    <div class="cart-summary">
-      <strong>Total cart value</strong>
-      <strong id="cart-total">₹0</strong>
+    <div class="cart-dialog-footer">
+      <div class="cart-summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">₹0</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Shipping</span>
+        <span id="cart-shipping-cost">Calculated next</span>
+      </div>
+      <div class="cart-summary">
+        <strong>Total cart value</strong>
+        <strong id="cart-total">₹0</strong>
+      </div>
+      <p class="cart-pricing-note">Shipping is calculated at checkout.</p>
+      <button class="button cart-continue" id="cart-proceed-payment" type="button">Proceed to payment</button>
     </div>
-    <p class="cart-pricing-note">Review your items and total before proceeding to payment.</p>
-    <button class="button cart-continue" id="cart-proceed-payment" type="button">Proceed to payment</button>
   </dialog>
   <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-title">
     <div class="cart-dialog-header">
@@ -510,6 +563,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
   <script src="auth-config.js"></script>
   <script src="payment-config.js"></script>
   <script src="account.js"></script>

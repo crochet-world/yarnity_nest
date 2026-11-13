@@ -67,9 +67,13 @@ The Account page provides Firebase Email/Password registration and login:
 
 Until these steps are completed, the Account page explains that authentication is not configured and does not pretend a login or registration succeeded.
 
+Signed-in customers are automatically signed out after five minutes without keyboard, pointer, touch, scroll, or wheel activity. Activity in another tab does not extend this page’s timer.
+
 Signed-in customers can add, edit, and delete multiple delivery addresses in **Manage Addresses**, including a recipient name, address type, and optional mobile number, then choose a saved address at checkout. For Indian addresses, entering a six-digit PIN code looks up and fills City and State; both fields remain editable. Address documents are scoped to the owning Firebase UID by `firestore.rules`; deploy the updated Firestore rules and Functions before using saved addresses at checkout. The previous single default address is still recognized and remains editable.
 
 Wishlist items are saved to the signed-in customer’s `users/{uid}/wishlist` collection and cached locally per account so they remain available after signing out and back in on the same browser. Deploy the updated Firestore rules to enable account-wide synchronization across devices.
+
+Signed-in customers can upload a JPG, PNG, or WebP profile picture from My Profile. The browser resizes images to at most 512 pixels per side and compresses them before upload. Enable Firebase Storage and create its default bucket for the project configured in `auth-config.js`, then deploy the owner-scoped Storage rules to that same project with `firebase deploy --only storage --project yarnitynest` (replace the project ID if `auth-config.js` points elsewhere). Profile images are stored under the signed-in user’s folder; Storage rules limit uploads to the two profile-picture slots and allow only the owning account to access them. A `storage/unauthorized` error means the rules need to be deployed; `storage/bucket-not-found` means Storage or its bucket is not set up for the configured project.
 
 ## Customer order history
 
